@@ -8,7 +8,6 @@ import { Car, Bell, Settings, LogOut, TrendingUp, Calendar, Users, Star, Menu } 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { ThemeToggle } from "@/components/theme-toggle"
 import { useState } from "react"
 
 interface DashboardLayoutProps {
@@ -69,7 +68,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
 
           <div className="flex items-center space-x-4">
-            <ThemeToggle />
             <Button variant="ghost" size="icon">
               <Bell className="h-5 w-5" />
             </Button>
