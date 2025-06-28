@@ -10,7 +10,6 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "MtokaaHero - Automotive Marketplace",
   description: "Connect with trusted automotive professionals",
-  generator: "v0.dev",
 };
 
 export default function RootLayout({

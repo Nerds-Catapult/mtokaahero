@@ -2,13 +2,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import Image from "next/image"
 import {
   MapPin,
   Clock,
   Star,
   Search,
   Wrench,
-  Car,
   Settings,
   Phone,
   Shield,
@@ -31,7 +31,14 @@ export default function HomePage() {
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Car className="h-8 w-8 text-blue-600" />
+            {/* <Car className="h-8 w-8 text-blue-600" /> */}
+            <Image
+              src="/logo.png"
+              alt="MtokaaHero Logo"
+              width={40}
+              height={40}
+              className="h-10 w-10 rounded-full object-cover"
+            />
             <span className="text-2xl font-bold text-gray-900">MtokaaHero</span>
           </div>
           <nav className="hidden md:flex items-center space-x-6">
@@ -256,7 +263,13 @@ export default function HomePage() {
             <Card className="text-center hover:shadow-xl transition-all duration-300 border-orange-100 hover:border-orange-200">
               <CardHeader>
                 <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Car className="h-8 w-8 text-orange-600" />
+                  <Image
+                    src="/car.png"
+                    alt="Car Icon"
+                    width={32}
+                    height={32}
+                    className="h-8 w-8 text-orange-600"
+                  />
                 </div>
                 <CardTitle className="text-orange-900">Spare Parts Shops</CardTitle>
                 <CardDescription className="text-gray-600">
@@ -471,7 +484,14 @@ export default function HomePage() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <Car className="h-6 w-6 text-blue-400" />
+                <Image
+                  src="/car.png"
+                  alt="Car Icon"
+                  width={24}
+                  height={24}
+                  className="h-6 w-6 text-blue-400"
+                />
+
                 <span className="text-xl font-bold">MtokaaHero</span>
               </div>
               <p className="text-gray-400 mb-4">

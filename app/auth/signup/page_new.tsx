@@ -1,23 +1,30 @@
-"use client"
+"use client";
 
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { UserRole } from "@/lib/generated/prisma"
-import { Car, Loader2, Package, User, Wrench } from "lucide-react"
-import { signIn } from "next-auth/react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { UserRole } from "@/lib/generated/prisma";
+import { Loader2, Package, User, Wrench, Car } from "lucide-react";
+import { signIn } from "next-auth/react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function SignUpPage() {
-  const [userType, setUserType] = useState("")
-  const [step, setStep] = useState(1)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [userType, setUserType] = useState("");
+  const [step, setStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -26,8 +33,8 @@ export default function SignUpPage() {
     password: "",
     confirmPassword: "",
     role: UserRole.CUSTOMER as UserRole,
-  })
-  const router = useRouter()
+  });
+  const router = useRouter();
 
   const userTypes = [
     {
@@ -62,35 +69,38 @@ export default function SignUpPage() {
       color: "text-orange-600",
       role: UserRole.SPAREPARTS_SHOP,
     },
-  ]
+  ];
 
   const handleUserTypeSelect = (type: string) => {
-    const selectedType = userTypes.find(t => t.id === type)
-    setUserType(type)
-    setFormData(prev => ({ ...prev, role: selectedType?.role || UserRole.CUSTOMER }))
-    setStep(2)
-  }
+    const selectedType = userTypes.find((t) => t.id === type);
+    setUserType(type);
+    setFormData((prev) => ({
+      ...prev,
+      role: selectedType?.role || UserRole.CUSTOMER,
+    }));
+    setStep(2);
+  };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
     // Validation
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match")
-      setIsLoading(false)
-      return
+      setError("Passwords do not match");
+      setIsLoading(false);
+      return;
     }
 
     if (formData.password.length < 8) {
-      setError("Password must be at least 8 characters long")
-      setIsLoading(false)
-      return
+      setError("Password must be at least 8 characters long");
+      setIsLoading(false);
+      return;
     }
 
     try {
@@ -107,12 +117,12 @@ export default function SignUpPage() {
           password: formData.password,
           role: formData.role,
         }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to create account")
+        throw new Error(data.error || "Failed to create account");
       }
 
       // Auto sign in after successful registration
@@ -120,29 +130,31 @@ export default function SignUpPage() {
         email: formData.email,
         password: formData.password,
         redirect: false,
-      })
+      });
 
       if (result?.error) {
-        setError("Account created but failed to sign in. Please try signing in manually.")
+        setError(
+          "Account created but failed to sign in. Please try signing in manually."
+        );
       } else {
-        router.push("/dashboard")
+        router.push("/dashboard");
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : "An error occurred")
+      setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleGoogleSignUp = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      await signIn("google", { callbackUrl: "/dashboard" })
+      await signIn("google", { callbackUrl: "/dashboard" });
     } catch (error) {
-      setError("An error occurred during Google sign up")
-      setIsLoading(false)
+      setError("An error occurred during Google sign up");
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex items-center justify-center p-4">
@@ -150,24 +162,36 @@ export default function SignUpPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center space-x-2 mb-6">
-            <Car className="h-8 w-8 text-blue-600" />
+            <Image
+              src="/logo.png"
+              alt="MtokaaHero Logo"
+              width={40}
+              height={40}
+              className="h-10 w-10 rounded-full object-cover"
+            />
             <span className="text-2xl font-bold text-gray-900">MtokaaHero</span>
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Join MtokaaHero</h1>
-          <p className="text-gray-600">Start growing your automotive business today</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Join MtokaaHero
+          </h1>
+          <p className="text-gray-600">
+            Start growing your automotive business today
+          </p>
         </div>
 
         {step === 1 && (
           <Card>
             <CardHeader>
               <CardTitle>Choose Your Account Type</CardTitle>
-              <CardDescription>Select the option that best describes you</CardDescription>
+              <CardDescription>
+                Select the option that best describes you
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <RadioGroup value={userType} onValueChange={handleUserTypeSelect}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {userTypes.map((type) => {
-                    const Icon = type.icon
+                    const Icon = type.icon;
                     return (
                       <div key={type.id} className="relative">
                         <RadioGroupItem
@@ -180,11 +204,15 @@ export default function SignUpPage() {
                           className="flex flex-col items-center justify-center p-6 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-500 peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-colors"
                         >
                           <Icon className={`h-8 w-8 mb-3 ${type.color}`} />
-                          <h3 className="font-medium text-gray-900 mb-1">{type.title}</h3>
-                          <p className="text-sm text-gray-600 text-center">{type.description}</p>
+                          <h3 className="font-medium text-gray-900 mb-1">
+                            {type.title}
+                          </h3>
+                          <p className="text-sm text-gray-600 text-center">
+                            {type.description}
+                          </p>
                         </Label>
                       </div>
-                    )
+                    );
                   })}
                 </div>
               </RadioGroup>
@@ -196,7 +224,9 @@ export default function SignUpPage() {
           <Card>
             <CardHeader>
               <CardTitle>Create Your Account</CardTitle>
-              <CardDescription>Enter your details to get started</CardDescription>
+              <CardDescription>
+                Enter your details to get started
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {error && (
@@ -212,7 +242,9 @@ export default function SignUpPage() {
                     <Input
                       id="firstName"
                       value={formData.firstName}
-                      onChange={(e) => handleInputChange("firstName", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("firstName", e.target.value)
+                      }
                       required
                       disabled={isLoading}
                     />
@@ -222,7 +254,9 @@ export default function SignUpPage() {
                     <Input
                       id="lastName"
                       value={formData.lastName}
-                      onChange={(e) => handleInputChange("lastName", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("lastName", e.target.value)
+                      }
                       required
                       disabled={isLoading}
                     />
@@ -258,7 +292,9 @@ export default function SignUpPage() {
                     id="password"
                     type="password"
                     value={formData.password}
-                    onChange={(e) => handleInputChange("password", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("password", e.target.value)
+                    }
                     required
                     disabled={isLoading}
                   />
@@ -270,7 +306,9 @@ export default function SignUpPage() {
                     id="confirmPassword"
                     type="password"
                     value={formData.confirmPassword}
-                    onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("confirmPassword", e.target.value)
+                    }
                     required
                     disabled={isLoading}
                   />
@@ -287,7 +325,9 @@ export default function SignUpPage() {
                     Back
                   </Button>
                   <Button type="submit" disabled={isLoading} className="flex-1">
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isLoading && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     Create Account
                   </Button>
                 </div>
@@ -298,7 +338,9 @@ export default function SignUpPage() {
                   <span className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
                 </div>
               </div>
 
@@ -330,8 +372,13 @@ export default function SignUpPage() {
               </Button>
 
               <div className="text-center">
-                <span className="text-sm text-gray-600">Already have an account? </span>
-                <Link href="/auth/signin" className="text-sm text-blue-600 hover:underline">
+                <span className="text-sm text-gray-600">
+                  Already have an account?{" "}
+                </span>
+                <Link
+                  href="/auth/signin"
+                  className="text-sm text-blue-600 hover:underline"
+                >
                   Sign in
                 </Link>
               </div>
@@ -340,5 +387,5 @@ export default function SignUpPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

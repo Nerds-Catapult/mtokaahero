@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { UserRole } from "@/lib/generated/prisma";
 import { Car, Loader2, Package, User, Wrench } from "lucide-react";
 import { signIn } from "next-auth/react";
+import Image from "next/image";
 import Link from "next/link"
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -155,7 +156,14 @@ export default function SignUpPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center space-x-2 mb-6">
-            <Car className="h-8 w-8 text-blue-600" />
+            {/* <Car className="h-8 w-8 text-blue-600" /> */}
+            <Image
+              src="/logo.png"
+              alt="MtokaaHero Logo"
+              width={40}
+              height={40}
+              className="h-10 w-10 rounded-full object-cover"
+            />
             <span className="text-2xl font-bold text-gray-900">MtokaaHero</span>
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">

@@ -1,7 +1,11 @@
 {
-  "name": "my-v0-project",
+  "name": "mtokaahero",
   "version": "0.1.0",
   "private": true,
+  "author": {
+    "name": "AlphaUser",
+    "email": "gibsonsgibson88@gmail.com"
+  },
   "scripts": {
     "build": "next build",
     "dev": "next dev",

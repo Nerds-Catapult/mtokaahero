@@ -2,13 +2,24 @@
 
 import type React from "react"
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Car, Bell, Settings, LogOut, TrendingUp, Calendar, Users, Star, Menu } from "lucide-react"
+import { cn } from "@/lib/utils";
+import {
+  Bell,
+  Calendar,
+  Car,
+  LogOut,
+  Menu,
+  Settings,
+  Star,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
+import { usePathname } from "next/navigation";
 import { useState } from "react"
+import Image from "next/image";
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -57,11 +68,22 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="px-6 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setSidebarOpen(!sidebarOpen)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+            >
               <Menu className="h-5 w-5" />
             </Button>
             <Link href="/" className="flex items-center space-x-2">
-              <Car className="h-6 w-6 text-primary" />
+              <Image
+                src="/logo.png"
+                alt="MtokaaHero Logo"
+                width={40}
+                height={40}
+                className="h-10 w-10 rounded-full object-cover"
+              />
               <span className="text-xl font-bold">MtokaaHero</span>
             </Link>
             <Badge variant="secondary">Garage Owner</Badge>
@@ -87,8 +109,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           className={cn(
             "w-64 bg-background border-r min-h-screen transition-transform duration-200 ease-in-out",
             "md:translate-x-0",
-            sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
-            "fixed md:relative z-40",
+            sidebarOpen
+              ? "translate-x-0"
+              : "-translate-x-full md:translate-x-0",
+            "fixed md:relative z-40"
           )}
         >
           <nav className="p-6">
@@ -101,7 +125,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                       "flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors",
                       item.current
                         ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                     )}
                     onClick={() => setSidebarOpen(false)}
                   >
@@ -116,12 +140,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {/* Overlay for mobile */}
         {sidebarOpen && (
-          <div className="fixed inset-0 bg-black/50 z-30 md:hidden" onClick={() => setSidebarOpen(false)} />
+          <div
+            className="fixed inset-0 bg-black/50 z-30 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
         )}
 
         {/* Main Content */}
         <main className="flex-1 p-6">{children}</main>
       </div>
     </div>
-  )
+  );
 }
