@@ -1,13 +1,20 @@
 "use client"
 
+import { AuthStatus } from "@/components/auth-status";
+import { DashboardLayout } from "@/components/dashboard-layout";
 import { Badge } from "@/components/ui/badge"
-import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Plus, Eye, Edit, Calendar, Star } from "lucide-react"
-import { DashboardLayout } from "@/components/dashboard-layout"
-import { dashboardData, recentBookings, recentReviews, chartData } from "@/lib/mock-data"
+import { useAuth } from "@/hooks/use-auth";
+import {
+  chartData,
+  dashboardData,
+  recentBookings,
+  recentReviews,
+} from "@/lib/mock-data";
+import { Calendar, Edit, Eye, Plus, Star } from "lucide-react";
+import { useEffect, useState } from "react";
 
 // Simple chart components as fallback
 const SimpleLineChart = ({ data }: { data: any[] }) => {
@@ -92,12 +99,13 @@ export default function DashboardPage() {
   const [userType] = useState("garage")
   const [mounted, setMounted] = useState(false)
   const stats = dashboardData[userType as keyof typeof dashboardData]
+  const { user, isLoading, isAuthenticated } = useAuth();
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  if (!mounted) {
+  if (isLoading) {
     return (
       <DashboardLayout>
         <div className="space-y-6">
@@ -107,7 +115,15 @@ export default function DashboardPage() {
           </div>
         </div>
       </DashboardLayout>
-    )
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <AuthStatus />
+      </div>
+    );
   }
 
   return (
