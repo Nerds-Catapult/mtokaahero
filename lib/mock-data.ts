@@ -168,7 +168,7 @@ export const recentBookings = [
     service: "Oil Change & Filter",
     date: "2024-01-15",
     time: "10:00 AM",
-    status: "confirmed",
+    status: "confirmed"
   },
   {
     id: 2,

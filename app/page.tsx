@@ -20,6 +20,7 @@ import {
   MessageSquare,
   Calendar,
   DollarSign,
+  Car,
 } from "lucide-react"
 import Link from "next/link"
 import { featuredListings, stats } from "@/lib/mock-data"
@@ -263,13 +264,7 @@ export default function HomePage() {
             <Card className="text-center hover:shadow-xl transition-all duration-300 border-orange-100 hover:border-orange-200">
               <CardHeader>
                 <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Image
-                    src="/car.png"
-                    alt="Car Icon"
-                    width={32}
-                    height={32}
-                    className="h-8 w-8 text-orange-600"
-                  />
+                  <Car className="h-6 w-6 text-primary" />
                 </div>
                 <CardTitle className="text-orange-900">Spare Parts Shops</CardTitle>
                 <CardDescription className="text-gray-600">
