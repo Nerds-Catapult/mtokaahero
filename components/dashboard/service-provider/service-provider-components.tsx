@@ -41,7 +41,7 @@ interface Booking {
   service: string
   date: string
   time: string
-  status: "confirmed" | "pending" | "completed" | "cancelled"
+    status: "confirmed" | "pending" | "completed" | "cancelled" 
 }
 
 interface RecentBookingsProps {
