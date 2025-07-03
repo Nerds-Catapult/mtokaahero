@@ -1,9 +1,11 @@
-import prisma from "@/utils/prisma";
 import { ErrorHandlerService } from "@/middleware/erroHandler";
+import prisma from "@/utils/prisma";
 
 export class ShopService {
   static async getShopById(shopId: string) {
-    const missingArgs = await ErrorHandlerService.handleMissingArguments({ shopId });
+    const missingArgs = await ErrorHandlerService.handleMissingArguments({
+      shopId,
+    });
     if (missingArgs) return missingArgs;
 
     try {
@@ -43,7 +45,10 @@ export class ShopService {
   }
 
   static async updateShop(shopId: string, data: any) {
-    const missingArgs = await ErrorHandlerService.handleMissingArguments({ shopId, ...data });
+    const missingArgs = await ErrorHandlerService.handleMissingArguments({
+      shopId,
+      ...data,
+    });
     if (missingArgs) return missingArgs;
 
     try {
@@ -58,7 +63,9 @@ export class ShopService {
   }
 
   static async deleteShop(shopId: string) {
-    const missingArgs = await ErrorHandlerService.handleMissingArguments({ shopId });
+    const missingArgs = await ErrorHandlerService.handleMissingArguments({
+      shopId,
+    });
     if (missingArgs) return missingArgs;
 
     try {

@@ -1,9 +1,11 @@
-import prisma from "@/utils/prisma";
 import { ErrorHandlerService } from "@/middleware/erroHandler";
+import prisma from "@/utils/prisma";
 
 export class MechanicService {
   static async getMechanicById(mechanicId: string) {
-    const missingArgs = await ErrorHandlerService.handleMissingArguments({ mechanicId });
+    const missingArgs = await ErrorHandlerService.handleMissingArguments({
+      mechanicId,
+    });
     if (missingArgs) return missingArgs;
 
     try {
@@ -43,7 +45,10 @@ export class MechanicService {
   }
 
   static async updateMechanic(mechanicId: string, data: any) {
-    const missingArgs = await ErrorHandlerService.handleMissingArguments({ mechanicId, ...data });
+    const missingArgs = await ErrorHandlerService.handleMissingArguments({
+      mechanicId,
+      ...data,
+    });
     if (missingArgs) return missingArgs;
 
     try {
@@ -58,7 +63,9 @@ export class MechanicService {
   }
 
   static async deleteMechanic(mechanicId: string) {
-    const missingArgs = await ErrorHandlerService.handleMissingArguments({ mechanicId });
+    const missingArgs = await ErrorHandlerService.handleMissingArguments({
+      mechanicId,
+    });
     if (missingArgs) return missingArgs;
 
     try {

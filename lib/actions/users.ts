@@ -1,7 +1,7 @@
 'use server';
 
-import prisma from "@/utils/prisma";
 import { ErrorHandlerService } from "@/middleware/erroHandler";
+import prisma from "@/utils/prisma";
 
 
 export class UserService {
