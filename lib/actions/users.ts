@@ -34,4 +34,61 @@ export class UserService {
       throw error;
     }
   }
+
+    static async createUser(data: any) {
+      const missingArgs = await ErrorHandlerService.handleMissingArguments(data);
+      if (missingArgs) return missingArgs;
+
+      try {
+        const user = await prisma.user.create({
+          data,
+        });
+        return user;
+      } catch (error) {
+        return await ErrorHandlerService.handlePrismaErrors(error);
+      }
+    }
+
+    static async updateUser(userId: string, data: any) {
+      const missingArgs = await ErrorHandlerService.handleMissingArguments({ userId, ...data });
+      if (missingArgs) return missingArgs;
+
+      try {
+        const user = await prisma.user.update({
+          where: { id: userId },
+          data,
+        });
+        return user;
+      } catch (error) {
+        return await ErrorHandlerService.handlePrismaErrors(error);
+      }
+    }
+
+    static async deleteUser(userId: string) {
+      const missingArgs = await ErrorHandlerService.handleMissingArguments({ userId });
+      if (missingArgs) return missingArgs;
+
+      try {
+        await prisma.user.delete({
+          where: { id: userId },
+        });
+        return { message: "User deleted successfully" };
+      } catch (error) {
+        return await ErrorHandlerService.handlePrismaErrors(error);
+      }
+    }
+
+    static async getUserProfile(userId: string) {
+      const missingArgs = await ErrorHandlerService.handleMissingArguments({ userId });
+      if (missingArgs) return missingArgs;
+
+      try {
+        const profile = await prisma.userProfile.findUnique({
+          where: { userId },
+        });
+        return profile;
+      } catch (error) {
+        return await ErrorHandlerService.handlePrismaErrors(error);
+      }
+    }
 }
