@@ -1,3 +1,5 @@
+'use server';
+
 import prisma from "@/utils/prisma";
 import { ErrorHandlerService } from "@/middleware/erroHandler";
 

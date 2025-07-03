@@ -1,6 +1,6 @@
+'use server';
+
 import { Prisma, PrismaClient } from "@/lib/generated/prisma";
-
-
 
 
 export class ErrorHandlerService {
