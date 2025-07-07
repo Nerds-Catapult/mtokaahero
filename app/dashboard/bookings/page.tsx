@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { Badge } from '@/components/ui/badge';
@@ -37,18 +37,18 @@ import {
     Search,
     XCircle,
 } from 'lucide-react';
-import { useState } from 'react';
-import { Label } from 'recharts';
+import { useEffect, useState } from 'react';
+import { Label } from '@/components/ui/label';
+import { createBooking } from '@/lib/actions/shared/serviceActions';
 
 export default function BookingsPage() {
     const [selectedDate, setSelectedDate] = useState<Date>();
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [showNewBooking, setShowNewBooking] = useState(false);
-
     const [businesses, setBusinesses] = useState<Business>();
 
-    const fetchBusinesses = async () => {
+    const business = async () => {
         const userId = await getUserIdFromSession();
         if (!userId) return;
 
@@ -60,7 +60,17 @@ export default function BookingsPage() {
         setBusinesses(response.data);
     };
 
-    const createBooking = async (bookingData: any) => {};
+  const addBooking = async (bookingData: any) => {
+    const userId = await getUserIdFromSession();
+    if (!userId || !businesses?.id) return;
+
+    const response = await createBooking(businesses?.id, bookingData);
+    if (response.error || !response.data) {
+        console.error('Error creating booking:', response.error);
+        return;
+    }
+  };
+  
 
     const bookingStatuses = {
         confirmed: { icon: CheckCircle, color: 'text-green-600', variant: 'default' as const },
@@ -129,11 +139,10 @@ export default function BookingsPage() {
                                         <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} />
                                     </PopoverContent>
                                 </Popover>
-                                <Checkbox>
-                                    <Label htmlFor="terms">
-                                        <Checkbox id="terms" />I agree to the terms and conditions
-                                    </Label>
-                                </Checkbox>
+                                {/* <div className="flex items-center space-x-2">
+                                    <Checkbox id="terms" checked={customerIntent} onCheckedChange={setCustomerIntent} />
+                                    <Label htmlFor="terms">Create As Customer</Label>
+                                </div> */}
                                 <div className="flex gap-2">
                                     <Button
                                         variant="outline"
