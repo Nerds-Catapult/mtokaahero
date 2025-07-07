@@ -1,6 +1,8 @@
 import { ErrorHandlerService } from "@/middleware/erroHandler";
 import prisma from "@/utils/prisma";
 import { TruthProtocolService } from "../truthProtocols";
+import { Business } from "@/lib/generated/prisma";
+import { ErrorResponse } from "@/types/errors";
 
 export class SharedFunctionsService {
   constructor() {}
@@ -30,16 +32,23 @@ export class SharedFunctionsService {
       return await ErrorHandlerService.handlePrismaErrors(error);
     }
   }
-  static async getMyBusinesses(userId: string) {
+  static async getMyBusinesses(
+    userId: string
+  ): Promise<Business[] | ErrorResponse> {
     const missingArgs = await ErrorHandlerService.handleMissingArguments({
       userId,
     });
-    if (missingArgs) return missingArgs;
+    if (missingArgs)
+      return { ...(missingArgs as unknown as ErrorResponse), statusCode: 400 };
     try {
       const businesses = await prisma.business.findMany({
         where: { ownerId: userId },
         include: { services: true, reviews: true },
       });
+
+      if (!businesses || businesses.length === 0) {
+        return { error: "No businesses found for this user", statusCode: 404 };
+      }
       return businesses;
     } catch (error) {
       return await ErrorHandlerService.handlePrismaErrors(error);

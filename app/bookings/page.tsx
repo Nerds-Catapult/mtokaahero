@@ -22,14 +22,32 @@ import Link from "next/link"
 import { format } from "date-fns"
 import { recentBookings } from "@/lib/mock-data"
 import { SharedFunctionsService } from "@/lib/actions/shared/serviceActions"
+import { AuthSessionService } from "@/lib/actions/shared/authSession"
+import { ErrorResponse } from "@/types/errors"
+import { Business } from "@/types/Business" 
+
+// Define the Business type based on the response structure
+  const [selectedDate, setSelectedDate] = useState<Date>()
+  const [showBookingForm, setShowBookingForm] = useState(false)
+  const [businesses, setBusinesses] = useState<Business[]>([])
+  
 
 
 export default function BookingsPage() {
   const [selectedDate, setSelectedDate] = useState<Date>()
   const [showBookingForm, setShowBookingForm] = useState(false)
+  const [businesses, setBusinesses] = useState([])
 
   const fetchBusinesses = async () => {
+    const userId = await AuthSessionService.getUserIdFromSession()
+    if (!userId) return
 
+    const response = await SharedFunctionsService.getMyBusinesses(userId)
+    if (response instanceof Error || !response) {
+      // Handle error
+      return 
+    }
+    setBusinesses(response)
   }
 
   const bookingStatuses = {
