@@ -23,9 +23,14 @@ import { format } from "date-fns"
 import { recentBookings } from "@/lib/mock-data"
 import { SharedFunctionsService } from "@/lib/actions/shared/serviceActions"
 
+
 export default function BookingsPage() {
   const [selectedDate, setSelectedDate] = useState<Date>()
   const [showBookingForm, setShowBookingForm] = useState(false)
+
+  const fetchBusinesses = async () => {
+
+  }
 
   const bookingStatuses = {
     confirmed: { icon: CheckCircle, color: "text-green-600", bg: "bg-green-50" },
