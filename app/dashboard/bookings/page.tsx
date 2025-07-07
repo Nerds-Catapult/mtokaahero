@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
     DialogContent,
@@ -19,9 +18,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getUserIdFromSession } from '@/lib/actions/shared/authSession';
-import { getMyBusinesses } from '@/lib/actions/shared/serviceActions';
+import { getBusinessBookings, getMyBusinesses } from '@/lib/actions/shared/serviceActions';
 import { Business } from '@/lib/generated/prisma';
-import { allBookings } from '@/lib/mock-data';
+// import { allBookings } from '@/lib/mock-data';
+import { createBooking, getBusinessServices } from '@/lib/actions/shared/serviceActions';
+import { Booking, Service } from '@/lib/generated/prisma';
 import { format } from 'date-fns';
 import {
     AlertCircle,
@@ -38,8 +39,14 @@ import {
     XCircle,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Label } from '@/components/ui/label';
-import { createBooking } from '@/lib/actions/shared/serviceActions';
+
+// Extended type to include the transformed booking data
+type ExtendedBooking = Booking & {
+    customerName?: string;
+    customerPhone?: string;
+    customerEmail?: string;
+    serviceTitle?: string;
+};
 
 export default function BookingsPage() {
     const [selectedDate, setSelectedDate] = useState<Date>();
@@ -47,6 +54,15 @@ export default function BookingsPage() {
     const [statusFilter, setStatusFilter] = useState('all');
     const [showNewBooking, setShowNewBooking] = useState(false);
     const [businesses, setBusinesses] = useState<Business>();
+    const [services, setServices] = useState<Service[]>([]);
+    const [bookings, setBookings] = useState<ExtendedBooking[]>([]);
+    const [formdata, setFormData] = useState({
+        customerName: '',
+        customerPhone: '',
+        serviceType: '',
+        scheduledDate: '',
+        scheduledTime: '',
+    });
 
     const business = async () => {
         const userId = await getUserIdFromSession();
@@ -60,17 +76,43 @@ export default function BookingsPage() {
         setBusinesses(response.data);
     };
 
-  const addBooking = async (bookingData: any) => {
-    const userId = await getUserIdFromSession();
-    if (!userId || !businesses?.id) return;
+    const fetchServices = async () => {
+        if (!businesses?.id) return;
 
-    const response = await createBooking(businesses?.id, bookingData);
-    if (response.error || !response.data) {
-        console.error('Error creating booking:', response.error);
-        return;
-    }
-  };
-  
+        const response = await getBusinessServices(businesses.id);
+        if (response.error || !response.data) {
+            console.error('Error fetching services:', response.error);
+            return;
+        }
+        setServices(response.data);
+    };
+
+    const fetchBookings = async () => {
+        if (!businesses?.id) return;
+
+        const response = await getBusinessBookings(businesses.id);
+        if (response.error || !response.data) {
+            console.error('Error fetching bookings:', response.error);
+            return;
+        }
+        setBookings(response.data || []);
+    };
+
+    const addBooking = async (bookingData: any) => {
+        const userId = await getUserIdFromSession();
+        if (!userId || !businesses?.id) return;
+        const response = await createBooking(businesses?.id, bookingData);
+        if (response.error || !response.data) {
+            console.error('Error creating booking:', response.error);
+            return;
+        }
+    };
+
+    useEffect(() => {
+        business();
+        fetchServices();
+        fetchBookings();
+    }, []);
 
     const bookingStatuses = {
         confirmed: { icon: CheckCircle, color: 'text-green-600', variant: 'default' as const },
@@ -79,19 +121,19 @@ export default function BookingsPage() {
         cancelled: { icon: XCircle, color: 'text-red-600', variant: 'destructive' as const },
     };
 
-    const filteredBookings = allBookings.filter(booking => {
+    const filteredBookings = bookings.filter(booking => {
         const matchesSearch =
-            booking.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            booking.service.toLowerCase().includes(searchQuery.toLowerCase());
+            booking.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            booking.serviceTitle?.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStatus = statusFilter === 'all' || booking.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
 
     const bookingStats = {
-        total: allBookings.length,
-        confirmed: allBookings.filter(b => b.status === 'confirmed').length,
-        pending: allBookings.filter(b => b.status === 'pending').length,
-        completed: allBookings.filter(b => b.status === 'completed').length,
+        total: bookings.length,
+        confirmed: bookings.filter(b => b.status === 'confirmed').length,
+        pending: bookings.filter(b => b.status === 'pending').length,
+        completed: bookings.filter(b => b.status === 'completed').length,
     };
 
     return (
@@ -116,16 +158,24 @@ export default function BookingsPage() {
                                 <DialogDescription>Schedule a new appointment for a customer</DialogDescription>
                             </DialogHeader>
                             <div className="space-y-4">
-                                <Input placeholder="Customer name" />
-                                <Input placeholder="Customer phone" />
+                                <Input
+                                    placeholder="Customer name"
+                                    onChange={e => setFormData({ ...formdata, customerName: e.target.value })}
+                                />
+                                <Input
+                                    placeholder="Customer phone"
+                                    onChange={e => setFormData({ ...formdata, customerPhone: e.target.value })}
+                                />
                                 <Select>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Service type" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="oil-change">Oil Change</SelectItem>
-                                        <SelectItem value="brake-repair">Brake Repair</SelectItem>
-                                        <SelectItem value="engine-diagnostics">Engine Diagnostics</SelectItem>
+                                        {services.map(service => (
+                                            <SelectItem key={service.id} value={service.id}>
+                                                {service.title}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                                 <Popover>
@@ -151,7 +201,7 @@ export default function BookingsPage() {
                                     >
                                         Cancel
                                     </Button>
-                                    <Button onClick={() => setShowNewBooking(false)} className="flex-1">
+                                    <Button onClick={() => {}} className="flex-1">
                                         Create Booking
                                     </Button>
                                 </div>
@@ -271,10 +321,11 @@ export default function BookingsPage() {
                                                     <div>
                                                         <h4 className="font-medium text-lg">{booking.customerName}</h4>
                                                         <p className="text-sm text-muted-foreground">
-                                                            {booking.service}
+                                                            {booking.serviceTitle || 'Unknown service'}
                                                         </p>
                                                         <p className="text-sm text-muted-foreground">
-                                                            {booking.date} at {booking.time}
+                                                            {format(booking.scheduledDate, 'PPP')} at{' '}
+                                                            {booking.scheduledTime}
                                                         </p>
                                                     </div>
                                                     <div className="flex items-center space-x-2">

@@ -28,7 +28,11 @@ export async function createSuccessResponse<T>(data: T): Promise<ServiceResponse
 /**
  * Creates a standard error response
  */
-export async function createErrorResponse(message: string, code: number = 400, details?: any): Promise<ServiceResponse<any>> {
+export async function createErrorResponse(
+    message: string,
+    code: number = 400,
+    details?: any,
+): Promise<ServiceResponse<any>> {
     return {
         success: false,
         error: {
@@ -192,7 +196,16 @@ export async function getBusinessBookings(businessId: string): Promise<ServiceRe
             },
         });
 
-        return createSuccessResponse(bookings);
+        // Transform the data to make customer information more accessible
+        const transformedBookings = bookings.map(booking => ({
+            ...booking,
+            customerName: booking.customer.user.firstName + ' ' + booking.customer.user.lastName,
+            customerPhone: booking.customer.user.phone || '',
+            customerEmail: booking.customer.user.email,
+            serviceTitle: booking.service.title,
+        }));
+
+        return createSuccessResponse(transformedBookings);
     } catch (error) {
         const prismaError = await handlePrismaErrors(error);
         return createErrorResponse(

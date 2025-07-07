@@ -180,6 +180,7 @@ model Booking {
   serviceId     String
   scheduledDate DateTime
   scheduledTime String // Format: "14:30"
+  price         Float
   status        BookingStatus @default(PENDING)
   notes         String?
   totalAmount   Float
