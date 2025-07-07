@@ -18,7 +18,7 @@ export type ServiceResponse<T> = {
 /**
  * Creates a standard success response
  */
-export function createSuccessResponse<T>(data: T): ServiceResponse<T> {
+export async function createSuccessResponse<T>(data: T): Promise<ServiceResponse<T>> {
     return {
         success: true,
         data,
@@ -28,7 +28,7 @@ export function createSuccessResponse<T>(data: T): ServiceResponse<T> {
 /**
  * Creates a standard error response
  */
-export function createErrorResponse(message: string, code: number = 400, details?: any): ServiceResponse<any> {
+export async function createErrorResponse(message: string, code: number = 400, details?: any): Promise<ServiceResponse<any>> {
     return {
         success: false,
         error: {
@@ -42,7 +42,7 @@ export function createErrorResponse(message: string, code: number = 400, details
 /**
  * Validates required arguments
  */
-export function validateArgs(args: Record<string, any>): ServiceResponse<null> | null {
+export async function validateArgs(args: Record<string, any>): Promise<ServiceResponse<null> | null> {
     for (const [key, value] of Object.entries(args)) {
         if (value === undefined || value === null) {
             return createErrorResponse(`Missing required argument: ${key}`, 400);
@@ -56,7 +56,7 @@ export function validateArgs(args: Record<string, any>): ServiceResponse<null> |
  */
 export async function createBooking(businessId: string, bookingData: any): Promise<ServiceResponse<any>> {
     // Validate required arguments
-    const validation = validateArgs({
+    const validation = await validateArgs({
         businessId,
         ...bookingData,
     });
@@ -94,7 +94,7 @@ export async function createBooking(businessId: string, bookingData: any): Promi
  */
 export async function getMyBusinesses(userId: string): Promise<ServiceResponse<Business | null>> {
     // Validate required arguments
-    const validation = validateArgs({ userId });
+    const validation = await validateArgs({ userId });
     if (validation) return validation;
 
     try {
@@ -124,7 +124,7 @@ export async function getMyBusinesses(userId: string): Promise<ServiceResponse<B
  */
 export async function getBusinessById(businessId: string): Promise<ServiceResponse<Business | null>> {
     // Validate required arguments
-    const validation = validateArgs({ businessId });
+    const validation = await validateArgs({ businessId });
     if (validation) return validation;
 
     try {
@@ -153,7 +153,7 @@ export async function getBusinessById(businessId: string): Promise<ServiceRespon
  */
 export async function updateBusiness(businessId: string, data: any): Promise<ServiceResponse<Business | null>> {
     // Validate required arguments
-    const validation = validateArgs({ businessId, ...data });
+    const validation = await validateArgs({ businessId, ...data });
     if (validation) return validation;
 
     try {
@@ -178,7 +178,7 @@ export async function updateBusiness(businessId: string, data: any): Promise<Ser
  */
 export async function getBusinessBookings(businessId: string): Promise<ServiceResponse<any>> {
     // Validate required arguments
-    const validation = validateArgs({ businessId });
+    const validation = await validateArgs({ businessId });
     if (validation) return validation;
 
     try {
@@ -208,7 +208,7 @@ export async function getBusinessBookings(businessId: string): Promise<ServiceRe
  */
 export async function updateBookingStatus(bookingId: string, status: string): Promise<ServiceResponse<any>> {
     // Validate required arguments
-    const validation = validateArgs({ bookingId, status });
+    const validation = await validateArgs({ bookingId, status });
     if (validation) return validation;
 
     try {
@@ -233,7 +233,7 @@ export async function updateBookingStatus(bookingId: string, status: string): Pr
  */
 export async function getBusinessServices(businessId: string): Promise<ServiceResponse<any>> {
     // Validate required arguments
-    const validation = validateArgs({ businessId });
+    const validation = await validateArgs({ businessId });
     if (validation) return validation;
 
     try {
