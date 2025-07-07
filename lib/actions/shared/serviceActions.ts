@@ -1,6 +1,6 @@
 'use server';
 import { Business } from '@/lib/generated/prisma';
-import { handlePrismaErrors, handleMissingArguments } from '@/middleware/erroHandler';
+import { handlePrismaErrors } from '@/middleware/erroHandler';
 import prisma from '@/utils/prisma';
 import { validateBusinessId } from '../truthProtocols';
 
