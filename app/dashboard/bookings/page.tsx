@@ -34,12 +34,32 @@ import {
 import { format } from "date-fns"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { allBookings } from "@/lib/mock-data"
+import { Business } from "@/lib/generated/prisma"
+import { AuthSessionService } from "@/lib/actions/shared/authSession"
+import { SharedFunctionsService } from "@/lib/actions/shared/serviceActions"
 
 export default function BookingsPage() {
   const [selectedDate, setSelectedDate] = useState<Date>()
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [showNewBooking, setShowNewBooking] = useState(false)
+
+  const [businesses, setBusinesses] = useState<Business>();
+
+  const fetchBusinesses = async () => {
+      const userId = await AuthSessionService.getUserIdFromSession();
+      if (!userId) return;
+
+      const response = await SharedFunctionsService.getMyBusinesses(userId);
+      if (response.error || !response.data) {
+          console.error('Error fetching businesses:', response.error);
+          return;
+      }
+      setBusinesses(response.data);
+  };
+
+  const createBooking = async (bookingData: any) => {};
+
 
   const bookingStatuses = {
     confirmed: { icon: CheckCircle, color: "text-green-600", variant: "default" as const },
