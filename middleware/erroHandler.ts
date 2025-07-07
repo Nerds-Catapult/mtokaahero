@@ -1,25 +1,44 @@
-'use server';
-
+"use server";
 import { Prisma, PrismaClient } from "@/lib/generated/prisma";
-
+import { ErrorResponse } from "@/types/errors";
 
 export class ErrorHandlerService {
   constructor(private prisma: PrismaClient) {}
 
-  static async handlePrismaErrors(error: any) {
+  static async handlePrismaErrors(error: any): Promise<ErrorResponse> {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       switch (error.code) {
         case "P2002":
-          return { status: 409, message: "Unique constraint failed" };
+          return {
+            statusCode: 409,
+            message: "Unique constraint failed",
+            error: error.message,
+          };
         case "P2025":
-          return { status: 404, message: "Record not found" };
+          return {
+            statusCode: 404,
+            message: "Record not found",
+            error: error.message,
+          };
         default:
-          return { status: 500, message: "Database error occurred" };
+          return {
+            statusCode: 500,
+            message: "Database error occurred",
+            error: error.message,
+          };
       }
     } else if (error instanceof Prisma.PrismaClientValidationError) {
-      return { status: 400, message: "Validation error" };
+      return {
+        statusCode: 400,
+        message: "Validation error",
+        error: error.message,
+      };
     } else {
-      return { status: 500, message: "An unexpected error occurred" };
+      return {
+        statusCode: 500,
+        message: "An unexpected error occurred",
+        error: error.message,
+      };
     }
   }
 

@@ -8,57 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum UserRole {
-  CUSTOMER
-  FREELANCE_MECHANIC
-  GARAGE_OWNER
-  SPAREPARTS_SHOP
-  ADMIN
-}
-
-enum BusinessType {
-  FREELANCE_MECHANIC
-  GARAGE
-  SPAREPARTS_SHOP
-}
-
-enum ServiceStatus {
-  AVAILABLE
-  UNAVAILABLE
-  SUSPENDED
-}
-
-enum BookingStatus {
-  PENDING
-  CONFIRMED
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-  NO_SHOW
-}
-
-enum PaymentStatus {
-  PENDING
-  PAID
-  FAILED
-  REFUNDED
-}
-
-enum ProductStatus {
-  AVAILABLE
-  OUT_OF_STOCK
-  DISCONTINUED
-}
-
-enum OrderStatus {
-  PENDING
-  PROCESSING
-  SHIPPED
-  DELIVERED
-  CANCELLED
-  RETURNED
-}
-
 model User {
   id         String   @id @default(cuid())
   email      String   @unique
@@ -548,4 +497,57 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+
+
+enum UserRole {
+  CUSTOMER
+  FREELANCE_MECHANIC
+  GARAGE_OWNER
+  SPAREPARTS_SHOP
+  ADMIN
+}
+
+enum BusinessType {
+  FREELANCE_MECHANIC
+  GARAGE
+  SPAREPARTS_SHOP
+}
+
+enum ServiceStatus {
+  AVAILABLE
+  UNAVAILABLE
+  SUSPENDED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum ProductStatus {
+  AVAILABLE
+  OUT_OF_STOCK
+  DISCONTINUED
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  RETURNED
 }

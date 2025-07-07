@@ -58,19 +58,6 @@ export function ServiceProviderDashboard() {
         </ChartSection>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6 mb-8">
-        <ChartSection
-          title="Service Distribution"
-          description="Popular services breakdown"
-        >
-          <SimplePieChart data={chartData.services} />
-        </ChartSection>
-
-        <div className="lg:col-span-2">
-          <ServiceProviderQuickActions />
-        </div>
-      </div>
-
       {/* Main Content Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList>
