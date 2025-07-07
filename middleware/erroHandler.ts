@@ -2,13 +2,10 @@
 import { Prisma, PrismaClient } from "@/lib/generated/prisma";
 import { ErrorResponse } from "@/types/errors";
 
-export class ErrorHandlerService {
-    constructor(private prisma: PrismaClient) {}
-
-    /**
-     * Handles Prisma-specific errors and converts them to standard error responses
-     */
-    static async handlePrismaErrors(error: any): Promise<ErrorResponse> {
+/**
+ * Handles Prisma-specific errors and converts them to standard error responses
+ */
+export async function handlePrismaErrors(error: any): Promise<ErrorResponse> {
         if (error instanceof Prisma.PrismaClientKnownRequestError) {
             switch (error.code) {
                 case 'P2002': {
