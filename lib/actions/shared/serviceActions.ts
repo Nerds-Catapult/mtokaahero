@@ -30,4 +30,19 @@ export class SharedFunctionsService {
       return await ErrorHandlerService.handlePrismaErrors(error);
     }
   }
+  static async getMyBusinesses(userId: string) {
+    const missingArgs = await ErrorHandlerService.handleMissingArguments({
+      userId,
+    });
+    if (missingArgs) return missingArgs;
+    try {
+      const businesses = await prisma.business.findMany({
+        where: { ownerId: userId },
+        include: { services: true, reviews: true },
+      });
+      return businesses;
+    } catch (error) {
+      return await ErrorHandlerService.handlePrismaErrors(error);
+    }
+  }
 }
