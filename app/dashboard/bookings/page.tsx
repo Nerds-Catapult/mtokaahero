@@ -20,7 +20,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getUserIdFromSession } from '@/lib/actions/shared/authSession';
 import { getBusinessBookings, getMyBusinesses } from '@/lib/actions/shared/serviceActions';
 import { Business } from '@/lib/generated/prisma';
-// import { allBookings } from '@/lib/mock-data';
 import { createBooking, getBusinessServices } from '@/lib/actions/shared/serviceActions';
 import { Booking, Service } from '@/lib/generated/prisma';
 import { format } from 'date-fns';
@@ -131,9 +130,9 @@ export default function BookingsPage() {
 
     const bookingStats = {
         total: bookings.length,
-        confirmed: bookings.filter(b => b.status === 'confirmed').length,
-        pending: bookings.filter(b => b.status === 'pending').length,
-        completed: bookings.filter(b => b.status === 'completed').length,
+        confirmed: bookings.filter(b => b.status === ('confirmed' as string)).length,
+        pending: bookings.filter(b => b.status === ('pending' as string)).length,
+        completed: bookings.filter(b => b.status === ('completed' as string)).length,
     };
 
     return (
