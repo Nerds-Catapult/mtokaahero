@@ -255,7 +255,7 @@ export async function getBusinessServices(businessId: string): Promise<ServiceRe
             include: {
                 bookings: true,
                 reviews: true,
-            }
+            },
         });
 
         return createSuccessResponse(services);
@@ -263,6 +263,40 @@ export async function getBusinessServices(businessId: string): Promise<ServiceRe
         const prismaError = await handlePrismaErrors(error);
         return createErrorResponse(
             prismaError.message || 'Failed to fetch services',
+            prismaError.statusCode || 500,
+            prismaError.error,
+        );
+    }
+}
+
+/**
+ * Creates a new service for a business
+ */
+export async function createService(businessId: string, serviceData: any): Promise<ServiceResponse<any>> {
+    // Validate required arguments
+    const validation = await validateArgs({ businessId, ...serviceData });
+    if (validation) return validation;
+
+    try {
+        // Validate business existence
+        const businessValidation = await validateBusinessId(businessId);
+        if (businessValidation instanceof Error) {
+            return createErrorResponse('Business not found', 404);
+        }
+
+        // Create service
+        const service = await prisma.service.create({
+            data: {
+                ...serviceData,
+                businessId,
+            },
+        });
+
+        return createSuccessResponse(service);
+    } catch (error) {
+        const prismaError = await handlePrismaErrors(error);
+        return createErrorResponse(
+            prismaError.message || 'Failed to create service',
             prismaError.statusCode || 500,
             prismaError.error,
         );
