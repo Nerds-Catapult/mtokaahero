@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -19,18 +19,37 @@ import {
 } from "@/components/ui/dialog"
 import { Plus, Edit, Trash2, Eye, DollarSign, Clock, Star, TrendingUp } from "lucide-react"
 import { DashboardLayout } from "@/components/dashboard-layout"
-import { businessServices } from "@/lib/mock-data"
+import { getBusinessServices, getMyBusinesses } from "@/lib/actions/shared/serviceActions"
+import { getUserIdFromSession } from "@/lib/actions/shared/authSession"
+import { ServiceStatus, Service, Booking, Review } from "@/lib/generated/prisma"
+
+
+interface extendedService extends Service {
+  bookings: Booking[]
+  reviews: Review[]
+}
 
 export default function ServicesPage() {
   const [showNewService, setShowNewService] = useState(false)
   const [editingService, setEditingService] = useState<any>(null)
+  const [allServices, setAllServices] = useState<extendedService[]>([])
 
   const serviceStats = {
-    total: businessServices.length,
-    active: businessServices.filter((s) => s.active).length,
-    avgPrice: Math.round(businessServices.reduce((acc, s) => acc + s.avgPrice, 0) / businessServices.length),
-    totalBookings: businessServices.reduce((acc, s) => acc + s.bookings, 0),
+    total: allServices.length,
+    active: allServices.filter(s => s.status === ServiceStatus.AVAILABLE).length,
+    totalBookings: allServices.reduce((acc, s) => acc + s.bookings.length, 0),
+    
   }
+
+
+  const calculatePriceRange = (service: extendedService) => {
+    if (!service.bookings || service.bookings.length === 0) return "N/A"
+    const prices = service.bookings.map(b => b.price)
+    const minPrice = Math.min(...prices)
+    const maxPrice = Math.max(...prices)
+    return minPrice === maxPrice ? `$${minPrice}` : `$${minPrice} - $${maxPrice}`
+  }
+
 
   return (
     <DashboardLayout>
@@ -133,17 +152,7 @@ export default function ServicesPage() {
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Avg. Price</p>
-                  <p className="text-2xl font-bold">${serviceStats.avgPrice}</p>
-                </div>
-                <DollarSign className="h-8 w-8 text-orange-600" />
-              </div>
-            </CardContent>
-          </Card>
+          
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -165,35 +174,33 @@ export default function ServicesPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {businessServices.map((service) => (
+              {allServices.map((service) => (
                 <div key={service.id} className="p-4 border rounded-lg hover:shadow-sm transition-shadow">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
-                        <h4 className="font-medium text-lg">{service.name}</h4>
-                        <Badge variant={service.active ? "default" : "secondary"}>
-                          {service.active ? "Active" : "Inactive"}
+                        <h4 className="font-medium text-lg">{service.title}</h4>
+                        <Badge variant={service.status === ServiceStatus.AVAILABLE ? "default" : "secondary"}>
+                          {service.status === ServiceStatus.UNAVAILABLE ? "Active" : "Inactive"}
                         </Badge>
                         <Badge variant="outline">{service.category}</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground mb-2">{service.description}</p>
                       <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                         <div className="flex items-center">
-                          <DollarSign className="h-4 w-4 mr-1" />${service.priceRange}
+                          <DollarSign className="h-4 w-4 mr-1" />${
+                            calculatePriceRange(service)
+                          }
                         </div>
                         <div className="flex items-center">
                           <Clock className="h-4 w-4 mr-1" />
                           {service.duration}
                         </div>
-                        <div className="flex items-center">
-                          <Star className="h-4 w-4 mr-1" />
-                          {service.rating} ({service.reviews} reviews)
-                        </div>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-muted-foreground">Bookings</p>
-                      <p className="text-2xl font-bold">{service.bookings}</p>
+                      <p className="text-2xl font-bold">{service.bookings.length}</p>
                     </div>
                   </div>
 

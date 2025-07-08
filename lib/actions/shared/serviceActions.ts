@@ -252,6 +252,10 @@ export async function getBusinessServices(businessId: string): Promise<ServiceRe
     try {
         const services = await prisma.service.findMany({
             where: { businessId },
+            include: {
+                bookings: true,
+                reviews: true,
+            }
         });
 
         return createSuccessResponse(services);
