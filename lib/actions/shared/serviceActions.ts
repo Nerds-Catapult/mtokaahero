@@ -302,3 +302,54 @@ export async function createService(businessId: string, serviceData: any): Promi
         );
     }
 }
+
+/**
+ * Updates an existing service
+ */
+export async function updateService(serviceId: string, serviceData: any): Promise<ServiceResponse<any>> {
+    // Validate required arguments
+    const validation = await validateArgs({ serviceId, ...serviceData });
+    if (validation) return validation;
+
+    try {
+        // Update the service
+        const service = await prisma.service.update({
+            where: { id: serviceId },
+            data: serviceData,
+        });
+
+        return createSuccessResponse(service);
+    } catch (error) {
+        const prismaError = await handlePrismaErrors(error);
+        return createErrorResponse(
+            prismaError.message || 'Failed to update service',
+            prismaError.statusCode || 500,
+            prismaError.error,
+        );
+    }
+}
+
+/**
+ * Deletes a service
+ */
+export async function deleteService(serviceId: string): Promise<ServiceResponse<any>> {
+    // Validate required arguments
+    const validation = await validateArgs({ serviceId });
+    if (validation) return validation;
+
+    try {
+        // Delete the service
+        const service = await prisma.service.delete({
+            where: { id: serviceId },
+        });
+
+        return createSuccessResponse(service);
+    } catch (error) {
+        const prismaError = await handlePrismaErrors(error);
+        return createErrorResponse(
+            prismaError.message || 'Failed to delete service',
+            prismaError.statusCode || 500,
+            prismaError.error,
+        );
+    }
+}

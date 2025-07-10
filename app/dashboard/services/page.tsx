@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
     Dialog,
@@ -19,9 +18,10 @@ import {
 } from '@/components/ui/dialog';
 import { Plus, Edit, Trash2, Eye, DollarSign, Clock, Star, TrendingUp } from 'lucide-react';
 import { DashboardLayout } from '@/components/dashboard-layout';
-import { getBusinessServices, getMyBusinesses, createService } from '@/lib/actions/shared/serviceActions';
+import { getBusinessServices, getMyBusinesses, createService, updateService, deleteService } from '@/lib/actions/shared/serviceActions';
 import { getUserIdFromSession } from '@/lib/actions/shared/authSession';
 import { ServiceStatus, Service, Booking, Review, Business } from '@/lib/generated/prisma';
+import { Switch } from '@/components/ui/switch';
 
 interface extendedService extends Service {
     bookings: Booking[];
@@ -34,13 +34,14 @@ export default function ServicesPage() {
     const [allServices, setAllServices] = useState<extendedService[]>([]);
     const [businesses, setBusinesses] = useState<Business | null>(null);
     const [formdata, setFormData] = useState({
-        serviceName: '',
-        category: '',
+        title: '',
+        category: 'maintenance',
         description: '',
-        minPrice: 0,
-        maxPrice: 0,
-        duration: 0,
-        active: true,
+        price: 0,
+        duration: 60,
+        status: 'AVAILABLE',
+        images: [],
+        tags: []
     });
 
     const serviceStats = {
@@ -58,9 +59,9 @@ export default function ServicesPage() {
     };
 
     const fetchServices = async () => {
-        const userId = await getUserIdFromSession();
-        if (!userId) return;
-        const response = await getBusinessServices(userId);
+        if (!businesses?.id) return;
+        
+        const response = await getBusinessServices(businesses.id);
         if (response.error) {
             console.error('Failed to fetch services:', response.error);
             return;
@@ -80,9 +81,106 @@ export default function ServicesPage() {
     };
 
     useEffect(() => {
-        fetchServices();
         fetchBusinesses();
     }, []);
+    
+    // Call fetchServices whenever businesses changes
+    useEffect(() => {
+        if (businesses?.id) {
+            fetchServices();
+        }
+    }, [businesses]);
+
+    const addNewService = async () => {
+        if (!businesses?.id) {
+            console.error('No business found');
+            return;
+        }
+
+        // Validate form data
+        if (!formdata.title || !formdata.description || !formdata.price) {
+            console.error('Please fill in all required fields');
+            return;
+        }
+
+        const response = await createService(businesses.id, {
+            title: formdata.title,
+            description: formdata.description,
+            price: parseFloat(formdata.price.toString()),
+            duration: parseInt(formdata.duration.toString()),
+            category: formdata.category,
+            status: formdata.status as ServiceStatus,
+            images: [],
+            tags: []
+        });
+
+        if (response.error) {
+            console.error('Failed to create service:', response.error);
+            return;
+        }
+
+        // Add the new service to the list and reset form
+        setAllServices([...allServices, response.data]);
+        setFormData({
+            title: '',
+            category: 'maintenance',
+            description: '',
+            price: 0,
+            duration: 60,
+            status: 'AVAILABLE',
+            images: [],
+            tags: []
+        });
+        setShowNewService(false);
+        
+        // Refresh services list
+        fetchServices();
+    };
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+  
+    const handleUpdateService = async () => {
+        if (!editingService?.id) return;
+        
+        const response = await updateService(editingService.id, {
+            title: editingService.title,
+            description: editingService.description,
+            price: parseFloat(editingService.price.toString()),
+            duration: parseInt(editingService.duration.toString()),
+            category: editingService.category,
+            status: editingService.status,
+        });
+        
+        if (response.error) {
+            console.error('Failed to update service:', response.error);
+            return;
+        }
+        
+        // Update the service in the list
+        setAllServices(
+            allServices.map(service => 
+                service.id === editingService.id ? { ...service, ...response.data } : service
+            )
+        );
+        
+        setEditingService(null);
+    };
+    
+    const handleDeleteService = async (serviceId: string) => {
+        if (!confirm('Are you sure you want to delete this service?')) return;
+        
+        const response = await deleteService(serviceId);
+        
+        if (response.error) {
+            console.error('Failed to delete service:', response.error);
+            return;
+        }
+        
+        // Remove the service from the list
+        setAllServices(allServices.filter(service => service.id !== serviceId));
+    };
 
     return (
         <DashboardLayout>
@@ -108,12 +206,21 @@ export default function ServicesPage() {
                             <div className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <Label htmlFor="serviceName">Service Name</Label>
-                                        <Input id="serviceName" placeholder="Oil Change" />
+                                        <Label htmlFor="title">Service Name</Label>
+                                        <Input 
+                                            id="title" 
+                                            name="title" 
+                                            placeholder="Oil Change" 
+                                            value={formdata.title || ''}
+                                            onChange={handleInputChange} 
+                                        />
                                     </div>
                                     <div>
                                         <Label htmlFor="category">Category</Label>
-                                        <Select>
+                                        <Select
+                                            value={formdata.category}
+                                            onValueChange={(value) => setFormData({...formdata, category: value})}
+                                        >
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Select category" />
                                             </SelectTrigger>
@@ -128,24 +235,60 @@ export default function ServicesPage() {
                                 </div>
                                 <div>
                                     <Label htmlFor="description">Description</Label>
-                                    <Textarea id="description" placeholder="Describe your service..." rows={3} />
+                                    <Textarea 
+                                        id="description" 
+                                        name="description" 
+                                        placeholder="Describe your service..." 
+                                        rows={3} 
+                                        value={formdata.description || ''}
+                                        onChange={handleInputChange}
+                                    />
                                 </div>
                                 <div className="grid grid-cols-3 gap-4">
                                     <div>
-                                        <Label htmlFor="minPrice">Min Price ($)</Label>
-                                        <Input id="minPrice" type="number" placeholder="50" />
-                                    </div>
-                                    <div>
-                                        <Label htmlFor="maxPrice">Max Price ($)</Label>
-                                        <Input id="maxPrice" type="number" placeholder="100" />
+                                        <Label htmlFor="price">Price ($)</Label>
+                                        <Input 
+                                            id="price" 
+                                            name="price"
+                                            type="number" 
+                                            placeholder="50" 
+                                            value={formdata.price || ''}
+                                            onChange={(e) => setFormData({...formdata, price: Number(e.target.value)})}
+                                        />
                                     </div>
                                     <div>
                                         <Label htmlFor="duration">Duration (mins)</Label>
-                                        <Input id="duration" type="number" placeholder="60" />
+                                        <Input 
+                                            id="duration" 
+                                            name="duration"
+                                            type="number" 
+                                            placeholder="60" 
+                                            value={formdata.duration || ''}
+                                            onChange={(e) => setFormData({...formdata, duration: Number(e.target.value)})}
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="status">Status</Label>
+                                        <Select
+                                            value={formdata.status || 'AVAILABLE'}
+                                            onValueChange={(value) => setFormData({...formdata, status: value})}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select status" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="AVAILABLE">Available</SelectItem>
+                                                <SelectItem value="UNAVAILABLE">Unavailable</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                    <Switch id="active" />
+                                    <Switch 
+                                        id="active" 
+                                        checked={formdata.status === 'AVAILABLE'}
+                                        onCheckedChange={(checked) => setFormData({...formdata, status: checked ? 'AVAILABLE' : 'UNAVAILABLE'})}
+                                    />
                                     <Label htmlFor="active">Active Service</Label>
                                 </div>
                                 <div className="flex gap-2">
@@ -156,7 +299,7 @@ export default function ServicesPage() {
                                     >
                                         Cancel
                                     </Button>
-                                    <Button onClick={() => setShowNewService(false)} className="flex-1">
+                                    <Button onClick={addNewService} className="flex-1">
                                         Add Service
                                     </Button>
                                 </div>
@@ -260,7 +403,7 @@ export default function ServicesPage() {
                                             <Edit className="h-4 w-4 mr-1" />
                                             Edit
                                         </Button>
-                                        <Button size="sm" variant="outline">
+                                        <Button size="sm" variant="outline" onClick={() => handleDeleteService(service.id)}>
                                             <Trash2 className="h-4 w-4 mr-1" />
                                             Delete
                                         </Button>
@@ -283,11 +426,19 @@ export default function ServicesPage() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <Label htmlFor="editServiceName">Service Name</Label>
-                                        <Input id="editServiceName" defaultValue={editingService.name} />
+                                        <Input 
+                                            id="editServiceName" 
+                                            name="title"
+                                            value={editingService.title}
+                                            onChange={(e) => setEditingService({...editingService, title: e.target.value})}
+                                        />
                                     </div>
                                     <div>
                                         <Label htmlFor="editCategory">Category</Label>
-                                        <Select defaultValue={editingService.category}>
+                                        <Select 
+                                            defaultValue={editingService.category}
+                                            onValueChange={(value) => setEditingService({...editingService, category: value})}
+                                        >
                                             <SelectTrigger>
                                                 <SelectValue />
                                             </SelectTrigger>
@@ -302,24 +453,59 @@ export default function ServicesPage() {
                                 </div>
                                 <div>
                                     <Label htmlFor="editDescription">Description</Label>
-                                    <Textarea id="editDescription" defaultValue={editingService.description} rows={3} />
+                                    <Textarea 
+                                        id="editDescription" 
+                                        name="description"
+                                        value={editingService.description}
+                                        onChange={(e) => setEditingService({...editingService, description: e.target.value})}
+                                        rows={3} 
+                                    />
                                 </div>
                                 <div className="grid grid-cols-3 gap-4">
                                     <div>
-                                        <Label htmlFor="editMinPrice">Price Range</Label>
-                                        <Input id="editMinPrice" defaultValue={editingService.priceRange} />
+                                        <Label htmlFor="editPrice">Price ($)</Label>
+                                        <Input 
+                                            id="editPrice" 
+                                            name="price"
+                                            type="number" 
+                                            placeholder="50" 
+                                            value={editingService.price || ''}
+                                            onChange={(e) => setEditingService({...editingService, price: Number(e.target.value)})}
+                                        />
                                     </div>
                                     <div>
-                                        <Label htmlFor="editDuration">Duration</Label>
-                                        <Input id="editDuration" defaultValue={editingService.duration} />
+                                        <Label htmlFor="editDuration">Duration (mins)</Label>
+                                        <Input 
+                                            id="editDuration" 
+                                            name="duration"
+                                            type="number" 
+                                            placeholder="60" 
+                                            value={editingService.duration || ''}
+                                            onChange={(e) => setEditingService({...editingService, duration: Number(e.target.value)})}
+                                        />
                                     </div>
                                     <div>
-                                        <Label htmlFor="editRating">Rating</Label>
-                                        <Input id="editRating" defaultValue={editingService.rating} disabled />
+                                        <Label htmlFor="editStatus">Status</Label>
+                                        <Select
+                                            value={editingService.status || 'AVAILABLE'}
+                                            onValueChange={(value) => setEditingService({...editingService, status: value})}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select status" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="AVAILABLE">Available</SelectItem>
+                                                <SelectItem value="UNAVAILABLE">Unavailable</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                    <Switch id="editActive" defaultChecked={editingService.active} />
+                                    <Switch 
+                                        id="editActive" 
+                                        checked={editingService.status === 'AVAILABLE'}
+                                        onCheckedChange={(checked) => setEditingService({...editingService, status: checked ? 'AVAILABLE' : 'UNAVAILABLE'})}
+                                    />
                                     <Label htmlFor="editActive">Active Service</Label>
                                 </div>
                                 <div className="flex gap-2">
@@ -330,7 +516,7 @@ export default function ServicesPage() {
                                     >
                                         Cancel
                                     </Button>
-                                    <Button onClick={() => setEditingService(null)} className="flex-1">
+                                    <Button onClick={handleUpdateService} className="flex-1">
                                         Update Service
                                     </Button>
                                 </div>
