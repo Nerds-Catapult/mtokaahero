@@ -22,9 +22,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { recentBookings } from '@/lib/mock-data';
 import { format } from 'date-fns';
 import { AlertCircle, CalendarIcon, Car, CheckCircle, Clock, MessageSquare, Phone, Star, XCircle } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
-
 
 export default function BookingsPage() {
     const [selectedDate, setSelectedDate] = useState<Date>();
@@ -48,7 +48,20 @@ export default function BookingsPage() {
             <header className="bg-white border-b">
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
                     <Link href="/" className="flex items-center space-x-2">
-                        <Car className="h-8 w-8 text-blue-600" />
+                        {/* <Car className="h-8 w-8 text-blue-600" />
+                         */}
+                        <Image
+                            src="/logo.png"
+                            alt="MtokaaHero Logo"
+                            width={40}
+                            height={40}
+                            className="h-10 w-10 rounded-full object-cover"
+                            onError={e => {
+                                // Fallback to placeholder if logo doesn't exist
+                                const target = e.target as HTMLImageElement;
+                                target.src = '/placeholder-logo.png';
+                            }}
+                        />
                         <span className="text-2xl font-bold text-gray-900">MtokaaHero</span>
                     </Link>
                     <nav className="hidden md:flex items-center space-x-6">
