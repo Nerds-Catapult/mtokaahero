@@ -1,16 +1,19 @@
 'use client';
 
+import { EmergencyServiceModal } from '@/components/modals/emergency-service-modal';
+import { GetQuoteModal } from '@/components/modals/get-quote-modal';
+import { ScheduleServiceModal } from '@/components/modals/schedule-service-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -24,9 +27,14 @@ import { useState } from 'react';
 
 
 export default function BookingsPage() {
-  const [selectedDate, setSelectedDate] = useState<Date>();
-  const [showBookingForm, setShowBookingForm] = useState(false);
-  
+    const [selectedDate, setSelectedDate] = useState<Date>();
+    const [showBookingForm, setShowBookingForm] = useState(false);
+
+    // State for quick action modals
+    const [showScheduleModal, setShowScheduleModal] = useState(false);
+    const [showQuoteModal, setShowQuoteModal] = useState(false);
+    const [showEmergencyModal, setShowEmergencyModal] = useState(false);
+
     const bookingStatuses = {
         confirmed: { icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
         pending: { icon: AlertCircle, color: 'text-yellow-600', bg: 'bg-yellow-50' },
@@ -309,15 +317,27 @@ export default function BookingsPage() {
                                 <CardTitle>Quick Actions</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
-                                <Button className="w-full justify-start" variant="outline">
+                                <Button
+                                    className="w-full justify-start"
+                                    variant="outline"
+                                    onClick={() => setShowScheduleModal(true)}
+                                >
                                     <Calendar className="h-4 w-4 mr-2" />
                                     Schedule Service
                                 </Button>
-                                <Button className="w-full justify-start" variant="outline">
+                                <Button
+                                    className="w-full justify-start"
+                                    variant="outline"
+                                    onClick={() => setShowQuoteModal(true)}
+                                >
                                     <MessageSquare className="h-4 w-4 mr-2" />
                                     Get Quote
                                 </Button>
-                                <Button className="w-full justify-start" variant="outline">
+                                <Button
+                                    className="w-full justify-start"
+                                    variant="outline"
+                                    onClick={() => setShowEmergencyModal(true)}
+                                >
                                     <Phone className="h-4 w-4 mr-2" />
                                     Emergency Service
                                 </Button>
@@ -381,6 +401,19 @@ export default function BookingsPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Quick Action Modals */}
+            <ScheduleServiceModal
+                open={showScheduleModal}
+                onOpenChange={setShowScheduleModal}
+                businessId="default-business-id"
+            />
+            <GetQuoteModal open={showQuoteModal} onOpenChange={setShowQuoteModal} businessId="default-business-id" />
+            <EmergencyServiceModal
+                open={showEmergencyModal}
+                onOpenChange={setShowEmergencyModal}
+                businessId="default-business-id"
+            />
         </div>
     );
 }

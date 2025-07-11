@@ -2,31 +2,59 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertTriangle, Eye, Package, Plus, ShoppingCart, TrendingUp } from "lucide-react"
+import { useRouter } from 'next/navigation';
 
 export function ShopQuickActions() {
+  const router = useRouter();
+
+  const handleAddProduct = () => {
+      // This would open a product creation modal
+      // For now, we'll just show an alert
+      alert('Add product modal would open here');
+  };
+  
   const quickActions = [
-    { label: "Add New Product", icon: Plus },
-    { label: "Manage Inventory", icon: Package },
-    { label: "View Orders", icon: ShoppingCart },
-    { label: "View Storefront", icon: Eye },
-  ]
+      {
+          label: 'Add New Product',
+          icon: Plus,
+          onClick: handleAddProduct,
+      },
+      {
+          label: 'Manage Inventory',
+          icon: Package,
+          onClick: () => router.push('/dashboard/inventory'),
+      },
+      {
+          label: 'View Orders',
+          icon: ShoppingCart,
+          onClick: () => router.push('/dashboard/orders'),
+      },
+      {
+          label: 'View Storefront',
+          icon: Eye,
+          onClick: () => {
+              // This would open the storefront in a new tab
+              window.open('/marketplace', '_blank');
+          },
+      },
+  ];
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Quick Actions</CardTitle>
-        <CardDescription>Manage your shop efficiently</CardDescription>
-      </CardHeader>
-      <CardContent className="grid grid-cols-2 gap-3">
-        {quickActions.map((action, index) => (
-          <Button key={index} className="justify-start" variant="outline">
-            <action.icon className="h-4 w-4 mr-2" />
-            {action.label}
-          </Button>
-        ))}
-      </CardContent>
-    </Card>
-  )
+      <Card>
+          <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+              <CardDescription>Manage your shop efficiently</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 gap-3">
+              {quickActions.map((action, index) => (
+                  <Button key={index} className="justify-start" variant="outline" onClick={action.onClick}>
+                      <action.icon className="h-4 w-4 mr-2" />
+                      {action.label}
+                  </Button>
+              ))}
+          </CardContent>
+      </Card>
+  );
 }
 
 interface Product {
