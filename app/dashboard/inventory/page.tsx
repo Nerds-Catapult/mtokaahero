@@ -13,7 +13,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from '@/components/ui/use-toast';
 import {
     deleteProduct,
     getBusinessProducts,
@@ -23,6 +22,7 @@ import {
 } from '@/lib/actions/productActions';
 import { AlertTriangle, Edit, Eye, Package, Plus, Search, Trash2, TrendingDown, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import {toast} from 'sonner'
 
 // Types for the component
 type Product = {
@@ -109,11 +109,7 @@ export default function InventoryPage() {
                 console.log('✅ Products loaded:', productsResponse.data?.length);
             } else {
                 console.log('❌ Products error:', productsResponse.error);
-                toast({
-                    title: 'Error',
-                    description: productsResponse.error?.message || 'Failed to load products',
-                    variant: 'destructive',
-                });
+                toast.error(productsResponse.error?.message || 'Failed to load products');
             }
 
             console.log('📊 Low stock response:', lowStockResponse);
@@ -126,11 +122,7 @@ export default function InventoryPage() {
                 setAnalytics(analyticsResponse.data);
             }
         } catch (error) {
-            toast({
-                title: 'Error',
-                description: 'An unexpected error occurred while loading data',
-                variant: 'destructive',
-            });
+            toast.error('An unexpected error occurred while loading data');
         } finally {
             setLoading(false);
         }
@@ -144,24 +136,13 @@ export default function InventoryPage() {
         try {
             const response = await deleteProduct(productId, businessId);
             if (response.success) {
-                toast({
-                    title: 'Success',
-                    description: 'Product deleted successfully',
-                });
+                toast.success('Product deleted successfully');
                 loadData(); // Reload data
             } else {
-                toast({
-                    title: 'Error',
-                    description: response.error?.message || 'Failed to delete product',
-                    variant: 'destructive',
-                });
+                toast.error(response.error?.message || 'Failed to delete product');
             }
         } catch (error) {
-            toast({
-                title: 'Error',
-                description: 'An unexpected error occurred',
-                variant: 'destructive',
-            });
+            toast.error('An unexpected error occurred');
         }
     };
 
@@ -169,25 +150,14 @@ export default function InventoryPage() {
         try {
             const response = await updateProductStock(productId, businessId, newStock);
             if (response.success) {
-                toast({
-                    title: 'Success',
-                    description: 'Stock updated successfully',
-                });
+                toast.success('Stock updated successfully');
                 loadData(); // Reload data
                 setShowStockModal(false);
             } else {
-                toast({
-                    title: 'Error',
-                    description: response.error?.message || 'Failed to update stock',
-                    variant: 'destructive',
-                });
+                toast.error(response.error?.message || 'Failed to update stock');
             }
         } catch (error) {
-            toast({
-                title: 'Error',
-                description: 'An unexpected error occurred',
-                variant: 'destructive',
-            });
+            toast.error('An unexpected error occurred');
         }
     };
 
@@ -266,11 +236,7 @@ export default function InventoryPage() {
                         variant="outline" 
                         onClick={() => {
                             console.log('Testing toast...');
-                            toast({
-                                title: "Test Toast",
-                                description: "This is a test toast message",
-                                variant: "default",
-                            });
+                            toast.success("success test");
                         }}
                     >
                         Test Toast
