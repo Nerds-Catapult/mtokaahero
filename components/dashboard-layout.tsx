@@ -1,10 +1,10 @@
-"use client"
+'use client';
 
-import type React from "react";
+import type React from 'react';
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -13,17 +13,17 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useAuth } from "@/hooks/use-auth";
-import { cn } from "@/lib/utils";
+import { useAuth } from '@/hooks/use-auth';
+import { cn } from '@/lib/utils';
 import { Bell, Calendar, Car, ChevronDown, LogOut, Menu, Settings, Star, TrendingUp, User, Users } from 'lucide-react';
-import { signOut } from "next-auth/react";
-import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { signOut } from 'next-auth/react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
 interface DashboardLayoutProps {
-  children: React.ReactNode
+    children: React.ReactNode;
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
@@ -106,12 +106,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   },
               ]
             : [
-                  {
-                      name: 'Bookings',
-                      href: '/dashboard/bookings',
-                      icon: Calendar,
-                      current: pathname === '/dashboard/bookings',
-                  },
+                //   {
+                //       name: 'Bookings',
+                //       href: '/dashboard/bookings',
+                //       icon: Calendar,
+                //       current: pathname === '/dashboard/bookings',
+                //   },
               ]),
         ...(user?.role === 'SPAREPARTS_SHOP'
             ? [
