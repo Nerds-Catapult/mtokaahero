@@ -94,6 +94,7 @@ export default function InventoryPage() {
     }, []);
 
     const loadData = async () => {
+        console.log('🔄 Loading inventory data...');
         setLoading(true);
         try {
             const [productsResponse, lowStockResponse, analyticsResponse] = await Promise.all([
@@ -102,9 +103,12 @@ export default function InventoryPage() {
                 getProductAnalytics(businessId),
             ]);
 
+            console.log('📦 Products response:', productsResponse);
             if (productsResponse.success) {
                 setProducts(productsResponse.data || []);
+                console.log('✅ Products loaded:', productsResponse.data?.length);
             } else {
+                console.log('❌ Products error:', productsResponse.error);
                 toast({
                     title: 'Error',
                     description: productsResponse.error?.message || 'Failed to load products',
@@ -112,10 +116,12 @@ export default function InventoryPage() {
                 });
             }
 
+            console.log('📊 Low stock response:', lowStockResponse);
             if (lowStockResponse.success) {
                 setLowStockProducts(lowStockResponse.data || []);
             }
 
+            console.log('📈 Analytics response:', analyticsResponse);
             if (analyticsResponse.success) {
                 setAnalytics(analyticsResponse.data);
             }
@@ -254,12 +260,26 @@ export default function InventoryPage() {
                 <div className="flex justify-between items-center">
                     <div>
                         <h1 className="text-3xl font-bold">Inventory Management</h1>
-                        <p className="text-muted-foreground">Manage your spare parts inventory and stock levels</p>
-                    </div>
+                        <p className="text-muted-foreground">Manage your spare parts inventory and stock levels</p>                </div>
+                <div className="flex gap-2">
+                    <Button 
+                        variant="outline" 
+                        onClick={() => {
+                            console.log('Testing toast...');
+                            toast({
+                                title: "Test Toast",
+                                description: "This is a test toast message",
+                                variant: "default",
+                            });
+                        }}
+                    >
+                        Test Toast
+                    </Button>
                     <Button onClick={() => setShowAddModal(true)}>
                         <Plus className="h-4 w-4 mr-2" />
                         Add Product
                     </Button>
+                </div>
                 </div>
 
                 {/* Analytics Cards */}

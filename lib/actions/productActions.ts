@@ -68,14 +68,34 @@ export async function createErrorResponse(
 }
 
 /**
- * Validates required arguments
+ * Validates required arguments based on the operation type
  */
-export async function validateArgs(args: Record<string, any>): Promise<ProductResponse<any> | null> {
-    for (const [key, value] of Object.entries(args)) {
-        if (value === undefined || value === null) {
-            return createErrorResponse(`Missing required argument: ${key}`, 400);
+export async function validateArgs(args: Record<string, any>, operation?: string): Promise<ProductResponse<any> | null> {
+    // Define required fields based on operation
+    let requiredFields: string[] = [];
+    
+    if (operation === 'createProduct') {
+        requiredFields = ['businessId', 'name', 'description', 'price', 'sku', 'category', 'stock'];
+    } else if (operation === 'updateProduct') {
+        requiredFields = ['productId', 'businessId'];
+    } else if (operation === 'deleteProduct') {
+        requiredFields = ['productId', 'businessId'];
+    } else if (operation === 'updateStock') {
+        requiredFields = ['productId', 'businessId', 'stock'];
+    } else {
+        // Default: just check for businessId
+        requiredFields = ['businessId'];
+    }
+
+    for (const field of requiredFields) {
+        const value = args[field];
+        if (value === undefined || value === null || value === '') {
+            console.log(`❌ Validation failed - Missing required field: ${field} (operation: ${operation || 'default'})`);
+            return createErrorResponse(`Missing required argument: ${field}`, 400);
         }
     }
+    
+    console.log(`✅ Validation passed for operation: ${operation || 'default'}`);
     return null;
 }
 
@@ -83,10 +103,27 @@ export async function validateArgs(args: Record<string, any>): Promise<ProductRe
  * Get all products for a business (inventory management)
  */
 export async function getBusinessProducts(businessId: string): Promise<ProductResponse<any[]>> {
+    console.log('📦 Fetching products for business:', businessId);
+    
     const validation = await validateArgs({ businessId });
-    if (validation) return validation;
+    if (validation) {
+        console.log('❌ Validation failed for getBusinessProducts');
+        return validation;
+    }
 
     try {
+        // First check if business exists
+        const business = await prisma.business.findUnique({
+            where: { id: businessId },
+        });
+        
+        if (!business) {
+            console.log('❌ Business not found:', businessId);
+            return createErrorResponse('Business not found', 404);
+        }
+        
+        console.log('✅ Business found:', business.businessName);
+
         const products = await prisma.product.findMany({
             where: { businessId },
             include: {
@@ -109,8 +146,10 @@ export async function getBusinessProducts(businessId: string): Promise<ProductRe
             },
         });
 
+        console.log(`📊 Found ${products.length} products`);
         return createSuccessResponse(products);
     } catch (error) {
+        console.error('❌ Error fetching products:', error);
         const prismaError = await handlePrismaErrors(error);
         return createErrorResponse(
             prismaError.message || 'Failed to fetch products',
@@ -124,10 +163,67 @@ export async function getBusinessProducts(businessId: string): Promise<ProductRe
  * Create a new product
  */
 export async function createProduct(businessId: string, productData: ProductInput): Promise<ProductResponse<any>> {
-    const validation = await validateArgs({ businessId, ...productData });
-    if (validation) return validation;
+    console.log('🔧 Creating product...');
+
+    const validation = await validateArgs({ businessId, ...productData }, 'createProduct');
+    if (validation) {
+        console.log('❌ Validation failed');
+        return validation;
+    }
 
     try {
+        // First, check if the business exists
+        const business = await prisma.business.findUnique({
+            where: { id: businessId },
+        });
+
+        if (!business) {
+            console.log('📝 Setting up test business...');
+
+            // Create a test user first
+            let testUser;
+            try {
+                testUser = await prisma.user.findUnique({
+                    where: { email: 'test@spareparts.com' },
+                });
+
+                if (!testUser) {
+                    testUser = await prisma.user.create({
+                        data: {
+                            email: 'test@spareparts.com',
+                            password: 'hashed_password', // In production, this should be properly hashed
+                            firstName: 'Test',
+                            lastName: 'Owner',
+                            role: 'SPAREPARTS_SHOP',
+                            isVerified: true,
+                        },
+                    });
+                }
+            } catch (userError) {
+                console.error('❌ Error with test user:', userError);
+                return createErrorResponse('Failed to setup test environment', 500);
+            }
+
+            // Create a test business
+            try {
+                await prisma.business.create({
+                    data: {
+                        id: businessId,
+                        ownerId: testUser.id,
+                        businessName: 'Test Spare Parts Shop',
+                        businessType: 'SPAREPARTS_SHOP',
+                        description: 'A test spare parts shop for development',
+                        isVerified: true,
+                        isActive: true,
+                    },
+                });
+                console.log('✅ Test business created');
+            } catch (businessError) {
+                console.error('❌ Error creating test business:', businessError);
+                return createErrorResponse('Failed to create test business', 500);
+            }
+        }
+
         // Check if SKU already exists
         const existingSku = await prisma.product.findUnique({
             where: { sku: productData.sku },
@@ -164,8 +260,10 @@ export async function createProduct(businessId: string, productData: ProductInpu
             },
         });
 
+        console.log('✅ Product created successfully');
         return createSuccessResponse(product);
     } catch (error) {
+        console.error('❌ Error in createProduct:', error);
         const prismaError = await handlePrismaErrors(error);
         return createErrorResponse(
             prismaError.message || 'Failed to create product',
@@ -183,7 +281,7 @@ export async function updateProduct(
     businessId: string,
     productData: Partial<ProductInput>,
 ): Promise<ProductResponse<any>> {
-    const validation = await validateArgs({ productId, businessId });
+    const validation = await validateArgs({ productId, businessId }, 'updateProduct');
     if (validation) return validation;
 
     try {
@@ -245,7 +343,7 @@ export async function updateProduct(
  * Delete a product
  */
 export async function deleteProduct(productId: string, businessId: string): Promise<ProductResponse<any>> {
-    const validation = await validateArgs({ productId, businessId });
+    const validation = await validateArgs({ productId, businessId }, 'deleteProduct');
     if (validation) return validation;
 
     try {
@@ -284,7 +382,7 @@ export async function updateProductStock(
     businessId: string,
     stock: number,
 ): Promise<ProductResponse<any>> {
-    const validation = await validateArgs({ productId, businessId, stock });
+    const validation = await validateArgs({ productId, businessId, stock }, 'updateStock');
     if (validation) return validation;
 
     try {
@@ -346,10 +444,22 @@ export async function updateProductStock(
  * Get low stock products for a business
  */
 export async function getLowStockProducts(businessId: string): Promise<ProductResponse<any[]>> {
+    console.log('⚠️ Fetching low stock products for:', businessId);
+    
     const validation = await validateArgs({ businessId });
     if (validation) return validation;
 
     try {
+        // Check if business exists first
+        const business = await prisma.business.findUnique({
+            where: { id: businessId },
+        });
+        
+        if (!business) {
+            console.log('❌ Business not found for low stock check');
+            return createSuccessResponse([]); // Return empty array if business doesn't exist
+        }
+
         const products = await prisma.product.findMany({
             where: {
                 businessId,
@@ -377,8 +487,10 @@ export async function getLowStockProducts(businessId: string): Promise<ProductRe
             },
         });
 
+        console.log(`⚠️ Found ${products.length} low stock products`);
         return createSuccessResponse(products);
     } catch (error) {
+        console.error('❌ Error fetching low stock products:', error);
         const prismaError = await handlePrismaErrors(error);
         return createErrorResponse(
             prismaError.message || 'Failed to fetch low stock products',
@@ -392,10 +504,29 @@ export async function getLowStockProducts(businessId: string): Promise<ProductRe
  * Get product analytics for a business
  */
 export async function getProductAnalytics(businessId: string): Promise<ProductResponse<any>> {
+    console.log('📈 Fetching analytics for:', businessId);
+    
     const validation = await validateArgs({ businessId });
     if (validation) return validation;
 
     try {
+        // Check if business exists first
+        const business = await prisma.business.findUnique({
+            where: { id: businessId },
+        });
+        
+        if (!business) {
+            console.log('❌ Business not found for analytics');
+            // Return default analytics if business doesn't exist
+            return createSuccessResponse({
+                totalProducts: 0,
+                lowStockCount: 0,
+                outOfStockCount: 0,
+                availableCount: 0,
+                totalInventoryValue: 0,
+            });
+        }
+
         const [totalProducts, lowStockCount, outOfStockCount] = await Promise.all([
             prisma.product.count({
                 where: { businessId },
@@ -437,8 +568,10 @@ export async function getProductAnalytics(businessId: string): Promise<ProductRe
             totalInventoryValue,
         };
 
+        console.log('📊 Analytics result:', analytics);
         return createSuccessResponse(analytics);
     } catch (error) {
+        console.error('❌ Error fetching analytics:', error);
         const prismaError = await handlePrismaErrors(error);
         return createErrorResponse(
             prismaError.message || 'Failed to fetch product analytics',

@@ -91,81 +91,88 @@ export function AddProductModal({ open, onOpenChange, businessId, onProductAdded
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<ProductFormValues>({
-    resolver: zodResolver(productSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      price: "",
-      compareAtPrice: "",
-      sku: "",
-      barcode: "",
-      category: "",
-      subcategory: "",
-      brand: "",
-      model: "",
-      year: "",
-      partNumber: "",
-      stock: "",
-      minStock: "",
-      weight: "",
-      warranty: "",
-    },
-  })
+      resolver: zodResolver(productSchema),
+      defaultValues: {
+          name: '',
+          description: '',
+          price: '',
+          compareAtPrice: '',
+          sku: '',
+          barcode: '',
+          category: '',
+          subcategory: '',
+          brand: '',
+          model: '',
+          year: '',
+          partNumber: '',
+          stock: '',
+          minStock: '',
+          weight: '',
+          warranty: '',
+      },
+  });
 
   const onSubmit = async (data: ProductFormValues) => {
-    setIsSubmitting(true)
-    
-    try {
-      const productData = {
-        name: data.name,
-        description: data.description,
-        price: parseFloat(data.price),
-        compareAtPrice: data.compareAtPrice ? parseFloat(data.compareAtPrice) : undefined,
-        sku: data.sku,
-        barcode: data.barcode,
-        category: data.category,
-        subcategory: data.subcategory,
-        brand: data.brand,
-        model: data.model,
-        year: data.year ? parseInt(data.year) : undefined,
-        partNumber: data.partNumber,
-        stock: parseInt(data.stock),
-        minStock: data.minStock ? parseInt(data.minStock) : 0,
-        weight: data.weight ? parseFloat(data.weight) : undefined,
-        warranty: data.warranty,
-        status: 'AVAILABLE' as const,
-        images: [],
-        compatibility: [],
-        tags: [],
+      console.log('Form submitted');
+      setIsSubmitting(true);
+
+      try {
+          const productData = {
+              name: data.name,
+              description: data.description,
+              price: parseFloat(data.price),
+              compareAtPrice: data.compareAtPrice ? parseFloat(data.compareAtPrice) : undefined,
+              sku: data.sku,
+              barcode: data.barcode || undefined,
+              category: data.category,
+              subcategory: data.subcategory || undefined,
+              brand: data.brand || undefined,
+              model: data.model || undefined,
+              year: data.year ? parseInt(data.year) : undefined,
+              partNumber: data.partNumber || undefined,
+              stock: parseInt(data.stock),
+              minStock: data.minStock ? parseInt(data.minStock) : 0,
+              weight: data.weight ? parseFloat(data.weight) : undefined,
+              warranty: data.warranty || undefined,
+              status: 'AVAILABLE' as const,
+              images: [],
+              compatibility: [],
+              tags: [],
+          };
+
+          console.log('Calling createProduct...');
+
+          const response = await createProduct(businessId, productData);
+          console.log('Response received:', response.success ? 'SUCCESS' : 'ERROR');
+
+          if (response.success) {
+              console.log('✅ Product created successfully');
+              toast({
+                  title: 'Product added',
+                  description: 'Your product has been added to inventory successfully.',
+              });
+              form.reset();
+              onProductAdded();
+              onOpenChange(false);
+          } else {
+              console.log('❌ Product creation failed:', response.error);
+              toast({
+                  title: 'Error',
+                  description: response.error?.message || 'Failed to add product.',
+                  variant: 'destructive',
+              });
+          }
+      } catch (error) {
+          console.error('Error adding product:', error);
+          toast({
+              title: 'Error',
+              description: 'An unexpected error occurred. Please try again.',
+              variant: 'destructive',
+          });
+      } finally {
+          setIsSubmitting(false);
       }
-      
-      const response = await createProduct(businessId, productData)
-      
-      if (response.success) {
-        toast({
-          title: "Product added",
-          description: "Your product has been added to inventory successfully.",
-        })
-        form.reset()
-        onProductAdded()
-        onOpenChange(false)
-      } else {
-        toast({
-          title: "Error",
-          description: response.error?.message || "Failed to add product.",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
