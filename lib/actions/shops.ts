@@ -1,9 +1,9 @@
-import { ErrorHandlerService } from "@/middleware/erroHandler";
+import { handleMissingArguments, handlePrismaErrors } from "@/middleware/erroHandler";
 import prisma from "@/utils/prisma";
 
 export class ShopService {
   static async getShopById(shopId: string) {
-    const missingArgs = await ErrorHandlerService.handleMissingArguments({
+    const missingArgs = await handleMissingArguments({
       shopId,
     });
     if (missingArgs) return missingArgs;
@@ -15,7 +15,7 @@ export class ShopService {
       });
       return shop;
     } catch (error) {
-      return await ErrorHandlerService.handlePrismaErrors(error);
+      return await handlePrismaErrors(error);
     }
   }
 
@@ -26,12 +26,12 @@ export class ShopService {
       });
       return shops;
     } catch (error) {
-      return await ErrorHandlerService.handlePrismaErrors(error);
+      return await handlePrismaErrors(error);
     }
   }
 
   static async createShop(data: any) {
-    const missingArgs = await ErrorHandlerService.handleMissingArguments(data);
+    const missingArgs = await handleMissingArguments(data);
     if (missingArgs) return missingArgs;
 
     try {
@@ -40,12 +40,12 @@ export class ShopService {
       });
       return shop;
     } catch (error) {
-      return await ErrorHandlerService.handlePrismaErrors(error);
+      return await handlePrismaErrors(error);
     }
   }
 
   static async updateShop(shopId: string, data: any) {
-    const missingArgs = await ErrorHandlerService.handleMissingArguments({
+    const missingArgs = await handleMissingArguments({
       shopId,
       ...data,
     });
@@ -58,12 +58,12 @@ export class ShopService {
       });
       return shop;
     } catch (error) {
-      return await ErrorHandlerService.handlePrismaErrors(error);
+      return await handlePrismaErrors(error);
     }
   }
 
   static async deleteShop(shopId: string) {
-    const missingArgs = await ErrorHandlerService.handleMissingArguments({
+    const missingArgs = await handleMissingArguments({
       shopId,
     });
     if (missingArgs) return missingArgs;
@@ -74,7 +74,7 @@ export class ShopService {
       });
       return { message: "Shop deleted successfully" };
     } catch (error) {
-      return await ErrorHandlerService.handlePrismaErrors(error);
+      return await handlePrismaErrors(error);
     }
   }
 }
