@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useConsent } from '@/hooks/use-consent';
-import { stats } from '@/lib/mock-data';
+import { stats } from '@/lib/constants';
 import {
     Award,
     Calendar,
@@ -34,6 +34,7 @@ export default function HomePage() {
     const [showLocationDialog, setShowLocationDialog] = useState(false);
     const [searchLocation, setSearchLocation] = useState('');
     const [featuredData, setFeaturedData] = useState<any>({});
+    const [statsData, setStatsData] = useState(stats); // Start with static stats
     const [isLoading, setIsLoading] = useState(true);
     const [selectedService, setSelectedService] = useState<any>(null);
     const [showBookingDialog, setShowBookingDialog] = useState(false);
@@ -41,7 +42,22 @@ export default function HomePage() {
 
     useEffect(() => {
         fetchFeaturedData();
+        fetchStats();
     }, [currentLocation]);
+
+    const fetchStats = async () => {
+        try {
+            const response = await fetch('/api/stats');
+            const data = await response.json();
+
+            if (data.success && data.data.stats) {
+                setStatsData(data.data.stats);
+            }
+        } catch (error) {
+            console.error('Error fetching stats:', error);
+            // Keep using static stats as fallback
+        }
+    };
 
     const fetchFeaturedData = async () => {
         try {
@@ -239,7 +255,7 @@ export default function HomePage() {
 
                         {/* Stats */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
-                            {stats.map((stat, index) => (
+                            {statsData.map((stat, index) => (
                                 <div key={index} className="text-center">
                                     <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">
                                         {stat.value}

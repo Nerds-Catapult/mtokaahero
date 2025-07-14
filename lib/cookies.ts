@@ -124,21 +124,26 @@ export class CookieManager {
 
   private loadConsent(): void {
     try {
-      const stored = localStorage.getItem(COOKIE_CONSENT_KEY);
-      if (!stored) return;
+        // Check if we're in a browser environment
+        if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+            return;
+        }
 
-      const consent = JSON.parse(stored) as CookieConsent;
-      
-      // Check if consent is still valid (version match and not too old)
-      const isValidVersion = consent.version === COOKIE_CONSENT_VERSION;
-      const isNotExpired = Date.now() - consent.timestamp < 365 * 24 * 60 * 60 * 1000; // 1 year
+        const stored = localStorage.getItem(COOKIE_CONSENT_KEY);
+        if (!stored) return;
 
-      if (isValidVersion && isNotExpired) {
-        this.consent = consent;
-      } else {
-        // Clear invalid consent
-        this.clearConsent();
-      }
+        const consent = JSON.parse(stored) as CookieConsent;
+
+        // Check if consent is still valid (version match and not too old)
+        const isValidVersion = consent.version === COOKIE_CONSENT_VERSION;
+        const isNotExpired = Date.now() - consent.timestamp < 365 * 24 * 60 * 60 * 1000; // 1 year
+
+        if (isValidVersion && isNotExpired) {
+            this.consent = consent;
+        } else {
+            // Clear invalid consent
+            this.clearConsent();
+        }
     } catch (error) {
       console.warn('Failed to load cookie consent:', error);
       this.clearConsent();
@@ -147,6 +152,9 @@ export class CookieManager {
 
   private saveConsent(consent: CookieConsent): void {
     try {
+      if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+          return;
+      }
       localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(consent));
     } catch (error) {
       console.error('Failed to save cookie consent:', error);
@@ -155,6 +163,9 @@ export class CookieManager {
 
   private clearConsent(): void {
     try {
+      if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+          return;
+      }
       localStorage.removeItem(COOKIE_CONSENT_KEY);
       this.consent = null;
     } catch (error) {
@@ -209,11 +220,19 @@ export class CookieManager {
 
   private getLocalStorageData(): Record<string, string> {
     const data: Record<string, string> = {};
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key) {
-        data[key] = localStorage.getItem(key) || '';
-      }
+    try {
+        if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+            return data;
+        }
+
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key) {
+                data[key] = localStorage.getItem(key) || '';
+            }
+        }
+    } catch (error) {
+        console.warn('Failed to get localStorage data:', error);
     }
     return data;
   }

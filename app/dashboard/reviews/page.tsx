@@ -1,16 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { DashboardLayout } from '@/components/dashboard-layout';
+import { Badge } from '@/components/ui/badge';
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Search, Filter, Star, MessageSquare, Reply, ThumbsUp, Flag } from "lucide-react"
-import { DashboardLayout } from "@/components/dashboard-layout"
-import { allReviews } from "@/lib/mock-data"
+import { Textarea } from '@/components/ui/textarea';
+import { allReviews } from '@/lib/constants';
+import { Filter, Flag, MessageSquare, Reply, Search, Star, ThumbsUp } from 'lucide-react';
+import { useState } from 'react';
 
 export default function ReviewsPage() {
   const [searchQuery, setSearchQuery] = useState("")

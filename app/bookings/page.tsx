@@ -19,7 +19,7 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { recentBookings } from '@/lib/mock-data';
+import { recentBookings } from '@/lib/constants';
 import { format } from 'date-fns';
 import { AlertCircle, CalendarIcon, Car, CheckCircle, Clock, MessageSquare, Phone, Star, XCircle } from 'lucide-react';
 import Image from 'next/image';

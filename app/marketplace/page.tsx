@@ -1,19 +1,131 @@
 'use client';
 
-import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Car, Search, Filter, MapPin, Star, Clock, Phone, MessageSquare, Calendar, DollarSign } from 'lucide-react';
-import Link from 'next/link';
-import { marketplaceListings } from '@/lib/mock-data';
+import { Calendar, Clock, DollarSign, Filter, MapPin, MessageSquare, Phone, Search, Star } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 export default function MarketplacePage() {
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
+    const [listings, setListings] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        fetchListings();
+    }, [selectedCategory, searchQuery]);
+
+    const fetchListings = async () => {
+        try {
+            setIsLoading(true);
+            const params = new URLSearchParams({
+                limit: '20',
+            });
+
+            if (selectedCategory !== 'all') {
+                params.append('type', selectedCategory);
+            }
+            if (searchQuery) {
+                params.append('search', searchQuery);
+            }
+
+            const response = await fetch(`/api/featured?${params.toString()}`);
+            const data = await response.json();
+
+            if (data.success) {
+                // Combine services and businesses
+                const combinedListings = [
+                    ...(data.data.services || []).map((service: any) => ({
+                        ...service,
+                        type: 'service',
+                        name: service.title,
+                        location: getLocationString(service.business.addresses),
+                        rating: service.business.rating,
+                        reviews: service.business.totalReviews,
+                        services: [service.category, service.subcategory].filter(Boolean),
+                        priceRange: `${service.price}`,
+                        business: service.business,
+                    })),
+                    ...(data.data.businesses || []).map((business: any) => ({
+                        ...business,
+                        type: getBusinessTypeSlug(business.businessType),
+                        name: business.businessName,
+                        location: getLocationString(business.addresses),
+                        rating: business.rating,
+                        reviews: business.totalReviews,
+                        services: business.services?.slice(0, 3).map((s: any) => s.title) || [],
+                        priceRange: business.services?.length
+                            ? `${Math.min(...business.services.map((s: any) => s.price))}-${Math.max(
+                                  ...business.services.map((s: any) => s.price),
+                              )}`
+                            : 'Contact for pricing',
+                    })),
+                ];
+                setListings(combinedListings);
+            } else {
+                toast.error('Failed to load marketplace listings');
+            }
+        } catch (error) {
+            console.error('Error fetching listings:', error);
+            toast.error('Failed to load marketplace listings');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const getLocationString = (addresses: any[]) => {
+        const primaryAddress = addresses?.find(addr => addr.isPrimary) || addresses?.[0];
+        return primaryAddress?.address
+            ? `${primaryAddress.address.city}, ${primaryAddress.address.state}`
+            : 'Location not specified';
+    };
+
+    const getBusinessTypeSlug = (businessType: string) => {
+        switch (businessType) {
+            case 'GARAGE':
+                return 'garage';
+            case 'FREELANCE_MECHANIC':
+                return 'mechanic';
+            case 'SPARE_PARTS_SHOP':
+                return 'parts';
+            default:
+                return 'service';
+        }
+    };
+
+    const getBusinessTypeColor = (type: string) => {
+        switch (type.toLowerCase()) {
+            case 'garage':
+                return 'bg-blue-100 text-blue-700 hover:bg-blue-200';
+            case 'mechanic':
+                return 'bg-green-100 text-green-700 hover:bg-green-200';
+            case 'parts':
+                return 'bg-orange-100 text-orange-700 hover:bg-orange-200';
+            default:
+                return 'bg-gray-100 text-gray-700 hover:bg-gray-200';
+        }
+    };
+
+    const formatBusinessType = (type: string) => {
+        switch (type.toLowerCase()) {
+            case 'garage':
+                return 'Garage';
+            case 'mechanic':
+                return 'Mechanic';
+            case 'parts':
+                return 'Parts Shop';
+            case 'service':
+                return 'Service';
+            default:
+                return type;
+        }
+    };
 
     const categories = [
         { id: 'all', label: 'All Services' },
@@ -21,14 +133,6 @@ export default function MarketplacePage() {
         { id: 'mechanic', label: 'Mechanics' },
         { id: 'parts', label: 'Spare Parts' },
     ];
-
-    const filteredListings = marketplaceListings.filter(listing => {
-        const matchesCategory = selectedCategory === 'all' || listing.type === selectedCategory;
-        const matchesSearch =
-            listing.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            listing.services.some(service => service.toLowerCase().includes(searchQuery.toLowerCase()));
-        return matchesCategory && matchesSearch;
-    });
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -113,7 +217,7 @@ export default function MarketplacePage() {
                     {/* Listings */}
                     <div className="lg:col-span-2">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-semibold">{filteredListings.length} Results Found</h2>
+                            <h2 className="text-xl font-semibold">{listings.length} Results Found</h2>
                             <Select defaultValue="rating">
                                 <SelectTrigger className="w-48">
                                     <SelectValue placeholder="Sort by" />
@@ -128,78 +232,84 @@ export default function MarketplacePage() {
                         </div>
 
                         <div className="space-y-6">
-                            {filteredListings.map(listing => (
-                                <Card key={listing.id} className="hover:shadow-md transition-shadow">
-                                    <CardContent className="p-6">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <div>
-                                                <h3 className="text-xl font-semibold mb-1">{listing.name}</h3>
-                                                <div className="flex items-center text-gray-600 mb-2">
-                                                    <MapPin className="h-4 w-4 mr-1" />
-                                                    <span className="text-sm">{listing.location}</span>
-                                                </div>
-                                                <div className="flex items-center space-x-4">
-                                                    <div className="flex items-center">
-                                                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                                                        <span className="font-medium">{listing.rating}</span>
-                                                        <span className="text-gray-500 ml-1">
-                                                            ({listing.reviews} reviews)
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-center text-green-600">
-                                                        <Clock className="h-4 w-4 mr-1" />
-                                                        <span className="text-sm">Open Now</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <Badge
-                                                variant={
-                                                    listing.type === 'garage'
-                                                        ? 'default'
-                                                        : listing.type === 'mechanic'
-                                                        ? 'secondary'
-                                                        : 'outline'
-                                                }
-                                            >
-                                                {listing.type}
-                                            </Badge>
-                                        </div>
+                            {isLoading
+                                ? // Loading skeleton
+                                  [...Array(6)].map((_, index) => (
+                                      <Card key={index} className="animate-pulse">
+                                          <CardContent className="p-6">
+                                              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                                              <div className="h-3 bg-gray-200 rounded w-1/2 mb-4"></div>
+                                              <div className="space-y-2">
+                                                  <div className="h-3 bg-gray-200 rounded"></div>
+                                                  <div className="h-3 bg-gray-200 rounded w-4/5"></div>
+                                              </div>
+                                          </CardContent>
+                                      </Card>
+                                  ))
+                                : listings.map((listing: any) => (
+                                      <Card key={listing.id} className="hover:shadow-md transition-shadow">
+                                          <CardContent className="p-6">
+                                              <div className="flex justify-between items-start mb-4">
+                                                  <div>
+                                                      <h3 className="text-xl font-semibold mb-1">{listing.name}</h3>
+                                                      <div className="flex items-center text-gray-600 mb-2">
+                                                          <MapPin className="h-4 w-4 mr-1" />
+                                                          <span className="text-sm">{listing.location}</span>
+                                                      </div>
+                                                      <div className="flex items-center space-x-4">
+                                                          <div className="flex items-center">
+                                                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+                                                              <span className="font-medium">{listing.rating}</span>
+                                                              <span className="text-gray-500 ml-1">
+                                                                  ({listing.reviews} reviews)
+                                                              </span>
+                                                          </div>
+                                                          <div className="flex items-center text-green-600">
+                                                              <Clock className="h-4 w-4 mr-1" />
+                                                              <span className="text-sm">Open Now</span>
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                                  <Badge className={getBusinessTypeColor(listing.type)}>
+                                                      {formatBusinessType(listing.type)}
+                                                  </Badge>
+                                              </div>
 
-                                        <p className="text-gray-600 mb-4">{listing.description}</p>
+                                              <p className="text-gray-600 mb-4">{listing.description}</p>
 
-                                        <div className="flex flex-wrap gap-2 mb-4">
-                                            {listing.services.map((service, index) => (
-                                                <Badge key={index} variant="secondary" className="text-xs">
-                                                    {service}
-                                                </Badge>
-                                            ))}
-                                        </div>
+                                              <div className="flex flex-wrap gap-2 mb-4">
+                                                  {listing.services.map((service: string, index: number) => (
+                                                      <Badge key={index} variant="secondary" className="text-xs">
+                                                          {service}
+                                                      </Badge>
+                                                  ))}
+                                              </div>
 
-                                        <div className="flex items-center justify-between">
-                                            <div className="text-sm text-gray-600">
-                                                Starting from{' '}
-                                                <span className="font-semibold text-gray-900">
-                                                    ${listing.priceRange}
-                                                </span>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                <Button variant="outline" size="sm">
-                                                    <Phone className="h-4 w-4 mr-1" />
-                                                    Call
-                                                </Button>
-                                                <Button variant="outline" size="sm">
-                                                    <MessageSquare className="h-4 w-4 mr-1" />
-                                                    Message
-                                                </Button>
-                                                <Button size="sm">
-                                                    <Calendar className="h-4 w-4 mr-1" />
-                                                    Book Now
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
+                                              <div className="flex items-center justify-between">
+                                                  <div className="text-sm text-gray-600">
+                                                      Starting from{' '}
+                                                      <span className="font-semibold text-gray-900">
+                                                          ${listing.priceRange}
+                                                      </span>
+                                                  </div>
+                                                  <div className="flex gap-2">
+                                                      <Button variant="outline" size="sm">
+                                                          <Phone className="h-4 w-4 mr-1" />
+                                                          Call
+                                                      </Button>
+                                                      <Button variant="outline" size="sm">
+                                                          <MessageSquare className="h-4 w-4 mr-1" />
+                                                          Message
+                                                      </Button>
+                                                      <Button size="sm">
+                                                          <Calendar className="h-4 w-4 mr-1" />
+                                                          Book Now
+                                                      </Button>
+                                                  </div>
+                                              </div>
+                                          </CardContent>
+                                      </Card>
+                                  ))}
                         </div>
                     </div>
 

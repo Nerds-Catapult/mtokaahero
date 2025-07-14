@@ -1,28 +1,28 @@
 "use client"
 
-import { useState } from "react"
+import { DashboardLayout } from '@/components/dashboard-layout';
+import { Badge } from '@/components/ui/badge';
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { customers } from '@/lib/constants';
 import {
-  Search,
-  Filter,
-  Users,
-  Star,
-  Phone,
-  MessageSquare,
-  Eye,
-  Calendar,
-  DollarSign,
-  TrendingUp,
-  UserPlus,
-} from "lucide-react"
-import { DashboardLayout } from "@/components/dashboard-layout"
-import { customers } from "@/lib/mock-data"
+    Calendar,
+    DollarSign,
+    Eye,
+    Filter,
+    MessageSquare,
+    Phone,
+    Search,
+    Star,
+    TrendingUp,
+    UserPlus,
+    Users,
+} from 'lucide-react';
+import { useState } from 'react';
 
 export default function CustomersPage() {
   const [searchQuery, setSearchQuery] = useState("")

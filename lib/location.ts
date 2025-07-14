@@ -187,6 +187,9 @@ export class LocationService {
 
   private saveLocationToStorage(location: LocationData): void {
     try {
+      if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+          return;
+      }
       localStorage.setItem('mtokaa_user_location', JSON.stringify({
         ...location,
         timestamp: Date.now()
@@ -198,6 +201,10 @@ export class LocationService {
 
   private loadLocationFromStorage(): LocationData | null {
     try {
+      if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+          return null;
+      }
+      
       const stored = localStorage.getItem('mtokaa_user_location');
       if (!stored) return null;
 
@@ -219,6 +226,9 @@ export class LocationService {
 
   clearStoredLocation(): void {
     try {
+      if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+          return;
+      }
       localStorage.removeItem('mtokaa_user_location');
       this.currentLocation = null;
     } catch (error) {

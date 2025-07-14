@@ -1,24 +1,10 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
-import {
-  chartData,
-  dashboardData,
-  recentBookings,
-  recentReviews,
-} from "@/lib/mock-data";
-import {
-  SimpleBarChart,
-  SimpleLineChart,
-  SimplePieChart,
-} from "../charts/chart-components";
+import { chartData, dashboardData, recentBookings, recentReviews } from '@/lib/constants';
+import { SimpleBarChart, SimpleLineChart } from '../charts/chart-components';
 import { ChartSection, DashboardHeader } from "../shared/dashboard-components";
 import { StatsGrid } from "../shared/stats-grid";
-import {
-  BusinessPerformance,
-  CustomerReviews,
-  RecentBookings,
-  ServiceProviderQuickActions,
-} from "./service-provider-components";
+import { BusinessPerformance, CustomerReviews, RecentBookings } from './service-provider-components';
 
 export function ServiceProviderDashboard() {
   const { user } = useAuth();
