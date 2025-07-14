@@ -48,11 +48,7 @@ export function GetQuoteModal({ open, onOpenChange, businessId, serviceTypes = [
 
   const onSubmit = async (data: QuoteFormValues) => {
     if (!businessId) {
-      toast({
-        title: "Error",
-        description: "Business ID is missing. Cannot request quote.",
-        variant: "destructive",
-      })
+      toast.error("Business ID is required to request a quote.")
       return
     }
     
@@ -63,18 +59,11 @@ export function GetQuoteModal({ open, onOpenChange, businessId, serviceTypes = [
       // For now, we'll simulate success after a short delay
       await new Promise((resolve) => setTimeout(resolve, 1000))
       
-      toast({
-        title: "Quote Request Sent",
-        description: "Your request for a quote has been submitted. We'll get back to you shortly.",
-      })
+      toast.success("Your quote request has been submitted successfully.")
       form.reset()
       onOpenChange(false)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("An unexpected error occurred. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
