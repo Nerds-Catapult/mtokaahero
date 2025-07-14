@@ -1,18 +1,17 @@
 'use client';
-
+import { BookingDialog } from '@/components/booking-dialog';
 import { LocationPermissionDialog } from '@/components/location-permission-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useConsent } from '@/hooks/use-consent';
-import { featuredListings, stats } from '@/lib/mock-data';
+import { stats } from '@/lib/mock-data';
 import {
     Award,
     Calendar,
     Car,
     CheckCircle,
-    Clock,
     DollarSign,
     HeartHandshake,
     MapPin,
@@ -28,12 +27,51 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 export default function HomePage() {
     const [showLocationDialog, setShowLocationDialog] = useState(false);
     const [searchLocation, setSearchLocation] = useState('');
+    const [featuredData, setFeaturedData] = useState<any>({});
+    const [isLoading, setIsLoading] = useState(true);
+    const [selectedService, setSelectedService] = useState<any>(null);
+    const [showBookingDialog, setShowBookingDialog] = useState(false);
     const { currentLocation, canUseLocation, requestLocation } = useConsent();
+
+    useEffect(() => {
+        fetchFeaturedData();
+    }, [currentLocation]);
+
+    const fetchFeaturedData = async () => {
+        try {
+            setIsLoading(true);
+            const params = new URLSearchParams({
+                type: 'all',
+                limit: '6',
+            });
+
+            if (currentLocation?.latitude && currentLocation?.longitude) {
+                params.append('lat', currentLocation.latitude.toString());
+                params.append('lon', currentLocation.longitude.toString());
+            }
+
+            const response = await fetch(`/api/featured?${params.toString()}`);
+            const data = await response.json();
+
+            if (data.success) {
+                setFeaturedData(data.data);
+            } else {
+                console.error('Failed to fetch featured data:', data.error);
+                toast.error('Failed to load featured content');
+            }
+        } catch (error) {
+            console.error('Error fetching featured data:', error);
+            toast.error('Failed to load featured content');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const handleLocationSearch = () => {
         if (canUseLocation && !currentLocation) {
@@ -47,6 +85,39 @@ export default function HomePage() {
     const handleLocationGranted = (location: any) => {
         setSearchLocation(location.address || `${location.city}, ${location.state}`);
         setShowLocationDialog(false);
+    };
+
+    const handleBookService = (service: any) => {
+        setSelectedService(service);
+        setShowBookingDialog(true);
+    };
+
+    const getBusinessTypeColor = (type: string) => {
+        switch (type.toLowerCase()) {
+            case 'garage':
+                return 'bg-blue-100 text-blue-700 hover:bg-blue-200';
+            case 'mechanic':
+            case 'freelance_mechanic':
+                return 'bg-green-100 text-green-700 hover:bg-green-200';
+            case 'spare_parts':
+            case 'parts_shop':
+                return 'bg-orange-100 text-orange-700 hover:bg-orange-200';
+            default:
+                return 'bg-gray-100 text-gray-700 hover:bg-gray-200';
+        }
+    };
+
+    const formatBusinessType = (type: string) => {
+        switch (type) {
+            case 'GARAGE':
+                return 'Garage';
+            case 'FREELANCE_MECHANIC':
+                return 'Mechanic';
+            case 'SPARE_PARTS_SHOP':
+                return 'Parts Shop';
+            default:
+                return type;
+        }
     };
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
@@ -369,99 +440,223 @@ export default function HomePage() {
                         </Link>
                     </div>
 
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {featuredListings.map(listing => (
-                            <Card
-                                key={listing.id}
-                                className="hover:shadow-xl transition-all duration-300 border-gray-100 hover:border-blue-200"
-                            >
-                                <CardHeader>
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <CardTitle className="text-lg text-gray-900">{listing.name}</CardTitle>
-                                            <CardDescription className="flex items-center mt-1 text-gray-600">
-                                                <MapPin className="h-4 w-4 mr-1" />
-                                                {listing.location}
-                                            </CardDescription>
+                    {isLoading ? (
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {[...Array(6)].map((_, index) => (
+                                <Card key={index} className="animate-pulse">
+                                    <CardHeader>
+                                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-2">
+                                            <div className="h-3 bg-gray-200 rounded"></div>
+                                            <div className="h-3 bg-gray-200 rounded w-4/5"></div>
                                         </div>
-                                        <Badge
-                                            variant={
-                                                listing.type === 'garage'
-                                                    ? 'default'
-                                                    : listing.type === 'mechanic'
-                                                    ? 'secondary'
-                                                    : 'outline'
-                                            }
-                                            className={
-                                                listing.type === 'garage'
-                                                    ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                                                    : listing.type === 'mechanic'
-                                                    ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                                                    : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
-                                            }
-                                        >
-                                            {listing.type}
-                                        </Badge>
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div className="flex items-center">
-                                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                                            <span className="font-medium">{listing.rating}</span>
-                                            <span className="text-gray-500 ml-1">({listing.reviews} reviews)</span>
-                                        </div>
-                                        <div className="flex items-center text-green-600">
-                                            <Clock className="h-4 w-4 mr-1" />
-                                            <span className="text-sm">Open Now</span>
-                                        </div>
-                                    </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {/* Display Services */}
+                            {featuredData.services?.map((service: any) => {
+                                const primaryAddress =
+                                    service.business.addresses?.find((addr: any) => addr.isPrimary) ||
+                                    service.business.addresses?.[0];
+                                return (
+                                    <Card
+                                        key={service.id}
+                                        className="hover:shadow-xl transition-all duration-300 border-gray-100 hover:border-blue-200"
+                                    >
+                                        <CardHeader>
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <CardTitle className="text-lg text-gray-900">
+                                                        {service.title}
+                                                    </CardTitle>
+                                                    <CardDescription className="flex items-center mt-1 text-gray-600">
+                                                        <MapPin className="h-4 w-4 mr-1" />
+                                                        {primaryAddress?.address
+                                                            ? `${primaryAddress.address.city}, ${primaryAddress.address.state}`
+                                                            : 'Location not specified'}
+                                                    </CardDescription>
+                                                </div>
+                                                <Badge className={getBusinessTypeColor(service.business.businessType)}>
+                                                    {formatBusinessType(service.business.businessType)}
+                                                </Badge>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="flex items-center">
+                                                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+                                                    <span className="font-medium">
+                                                        {service.business.rating.toFixed(1)}
+                                                    </span>
+                                                    <span className="text-gray-500 ml-1">
+                                                        ({service.business.totalReviews} reviews)
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center text-green-600">
+                                                    <DollarSign className="h-4 w-4 mr-1" />
+                                                    <span className="text-sm font-medium">${service.price}</span>
+                                                </div>
+                                            </div>
 
-                                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">{listing.description}</p>
+                                            <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                                                {service.description}
+                                            </p>
 
-                                    <div className="flex flex-wrap gap-1 mb-4">
-                                        {listing.services.slice(0, 2).map((service, index) => (
-                                            <Badge
-                                                key={index}
-                                                variant="secondary"
-                                                className="text-xs bg-gray-100 text-gray-700"
-                                            >
-                                                {service}
-                                            </Badge>
-                                        ))}
-                                        {listing.services.length > 2 && (
-                                            <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-700">
-                                                +{listing.services.length - 2} more
-                                            </Badge>
-                                        )}
-                                    </div>
+                                            <div className="flex flex-wrap gap-1 mb-4">
+                                                <Badge
+                                                    variant="secondary"
+                                                    className="text-xs bg-gray-100 text-gray-700"
+                                                >
+                                                    {service.category}
+                                                </Badge>
+                                                {service.subcategory && (
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className="text-xs bg-gray-100 text-gray-700"
+                                                    >
+                                                        {service.subcategory}
+                                                    </Badge>
+                                                )}
+                                                {service.duration && (
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className="text-xs bg-gray-100 text-gray-700"
+                                                    >
+                                                        {service.duration}min
+                                                    </Badge>
+                                                )}
+                                            </div>
 
-                                    <div className="flex items-center justify-between">
-                                        <div className="text-sm text-gray-600">
-                                            Starting from{' '}
-                                            <span className="font-semibold text-gray-900">${listing.priceRange}</span>
-                                        </div>
-                                    </div>
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="text-sm text-gray-600">
+                                                    <span className="font-semibold">
+                                                        {service.business.businessName}
+                                                    </span>
+                                                </div>
+                                                {service.business.isVerified && (
+                                                    <div className="flex items-center text-green-600">
+                                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                                        <span className="text-sm">Verified</span>
+                                                    </div>
+                                                )}
+                                            </div>
 
-                                    <div className="flex gap-2 mt-4">
-                                        <Link href={`/marketplace/${listing.id}`} className="flex-1">
-                                            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                                                <Calendar className="h-4 w-4 mr-1" />
-                                                Book Now
-                                            </Button>
-                                        </Link>
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            className="border-blue-200 text-blue-600 hover:bg-blue-50"
-                                        >
-                                            <Phone className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                                                    onClick={() => handleBookService(service)}
+                                                >
+                                                    <Calendar className="h-4 w-4 mr-1" />
+                                                    Book Now
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    size="icon"
+                                                    className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                                                >
+                                                    <Phone className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                );
+                            })}
+
+                            {/* Display Businesses */}
+                            {featuredData.businesses?.slice(0, 3).map((business: any) => {
+                                const primaryAddress =
+                                    business.addresses?.find((addr: any) => addr.isPrimary) || business.addresses?.[0];
+                                return (
+                                    <Card
+                                        key={business.id}
+                                        className="hover:shadow-xl transition-all duration-300 border-gray-100 hover:border-blue-200"
+                                    >
+                                        <CardHeader>
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <CardTitle className="text-lg text-gray-900">
+                                                        {business.businessName}
+                                                    </CardTitle>
+                                                    <CardDescription className="flex items-center mt-1 text-gray-600">
+                                                        <MapPin className="h-4 w-4 mr-1" />
+                                                        {primaryAddress?.address
+                                                            ? `${primaryAddress.address.city}, ${primaryAddress.address.state}`
+                                                            : 'Location not specified'}
+                                                    </CardDescription>
+                                                </div>
+                                                <Badge className={getBusinessTypeColor(business.businessType)}>
+                                                    {formatBusinessType(business.businessType)}
+                                                </Badge>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="flex items-center">
+                                                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+                                                    <span className="font-medium">{business.rating.toFixed(1)}</span>
+                                                    <span className="text-gray-500 ml-1">
+                                                        ({business.totalReviews} reviews)
+                                                    </span>
+                                                </div>
+                                                {business.isVerified && (
+                                                    <div className="flex items-center text-green-600">
+                                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                                        <span className="text-sm">Verified</span>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                                                {business.description || 'Professional automotive services'}
+                                            </p>
+
+                                            <div className="flex flex-wrap gap-1 mb-4">
+                                                {business.services?.slice(0, 2).map((service: any, index: number) => (
+                                                    <Badge
+                                                        key={index}
+                                                        variant="secondary"
+                                                        className="text-xs bg-gray-100 text-gray-700"
+                                                    >
+                                                        {service.title}
+                                                    </Badge>
+                                                ))}
+                                                {business.services?.length > 2 && (
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className="text-xs bg-gray-100 text-gray-700"
+                                                    >
+                                                        +{business.services.length - 2} more
+                                                    </Badge>
+                                                )}
+                                            </div>
+
+                                            <div className="flex gap-2">
+                                                <Link href={`/marketplace/business/${business.id}`} className="flex-1">
+                                                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                                                        <Search className="h-4 w-4 mr-1" />
+                                                        View Services
+                                                    </Button>
+                                                </Link>
+                                                <Button
+                                                    variant="outline"
+                                                    size="icon"
+                                                    className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                                                >
+                                                    <Phone className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             </section>
 
@@ -671,6 +866,15 @@ export default function HomePage() {
                 onLocationGranted={handleLocationGranted}
                 onLocationDenied={() => setShowLocationDialog(false)}
             />
+
+            {/* Booking Dialog */}
+            {selectedService && (
+                <BookingDialog
+                    isOpen={showBookingDialog}
+                    onClose={() => setShowBookingDialog(false)}
+                    service={selectedService}
+                />
+            )}
         </div>
     );
 }
