@@ -188,25 +188,14 @@ export function EditProductModal({ open, onOpenChange, product, businessId, onPr
       const response = await updateProduct(product.id, businessId, productData)
       
       if (response.success) {
-        toast({
-          title: "Product updated",
-          description: "Your product has been updated successfully.",
-        })
+        toast.success("Product updated successfully.")
         onProductUpdated()
         onOpenChange(false)
       } else {
-        toast({
-          title: "Error",
-          description: response.error?.message || "Failed to update product.",
-          variant: "destructive",
-        })
+        toast.error(response.error?.message || "Failed to update product.")
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("An unexpected error occurred. Please try again.")
     } finally {
       setIsSubmitting(false)
     }

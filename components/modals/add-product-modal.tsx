@@ -11,7 +11,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { createProduct } from "@/lib/actions/productActions"
 
 const productSchema = z.object({
@@ -147,28 +147,17 @@ export function AddProductModal({ open, onOpenChange, businessId, onProductAdded
 
           if (response.success) {
               console.log('✅ Product created successfully');
-              toast({
-                  title: 'Product added',
-                  description: 'Your product has been added to inventory successfully.',
-              });
+              toast.success('Your product has been added to inventory successfully.');
               form.reset();
               onProductAdded();
               onOpenChange(false);
           } else {
               console.log('❌ Product creation failed:', response.error);
-              toast({
-                  title: 'Error',
-                  description: response.error?.message || 'Failed to add product.',
-                  variant: 'destructive',
-              });
+              toast.error(response.error?.message || 'Failed to add product.');
           }
       } catch (error) {
           console.error('Error adding product:', error);
-          toast({
-              title: 'Error',
-              description: 'An unexpected error occurred. Please try again.',
-              variant: 'destructive',
-          });
+          toast.error('An unexpected error occurred. Please try again.');
       } finally {
           setIsSubmitting(false);
       }
