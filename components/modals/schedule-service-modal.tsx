@@ -14,10 +14,10 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { toast } from "sonner"
+import { Textarea } from '@/components/ui/textarea';
 import { createBooking } from "@/lib/actions/shared/serviceActions"
 import { cn } from "@/lib/utils"
+import { toast } from 'sonner';
 
 const scheduleServiceSchema = z.object({
   customerName: z.string().min(2, "Customer name is required"),
@@ -70,11 +70,7 @@ export function ScheduleServiceModal({ open, onOpenChange, businessId, serviceTy
 
   const onSubmit = async (data: ScheduleServiceFormValues) => {
     if (!businessId) {
-      toast({
-        title: "Error",
-        description: "Business ID is missing. Cannot schedule service.",
-        variant: "destructive",
-      })
+      toast.error("Business ID is missing. Cannot schedule service.")
       return
     }
     
@@ -96,25 +92,14 @@ export function ScheduleServiceModal({ open, onOpenChange, businessId, serviceTy
       const response = await createBooking(businessId, bookingData)
       
       if (response.success) {
-        toast({
-          title: "Service scheduled",
-          description: "Your service has been scheduled successfully.",
-        })
+        toast.success("Your service has been scheduled successfully.")
         form.reset()
         onOpenChange(false)
       } else {
-        toast({
-          title: "Error",
-          description: response.error?.message || "Failed to schedule service.",
-          variant: "destructive",
-        })
+        toast.error(response.error?.message || "Failed to schedule service.")
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("An unexpected error occurred. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
