@@ -1,93 +1,95 @@
-import { UserRole } from "@/lib/generated/prisma"
-import prisma from "@/utils/prisma"
-import bcrypt from "bcryptjs"
-import { NextResponse } from "next/server"
-import { z } from "zod"
-
-const signupSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  phone: z.string().optional(),
-  role: z.nativeEnum(UserRole).optional(),
-})
+import { authSchemas, handleAuthError, validateAuthInput } from '@/lib/auth-errors';
+import { UserRole } from '@/lib/generated/prisma';
+import prisma from '@/utils/prisma';
+import bcrypt from 'bcryptjs';
+import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
-  try {
-    const body = await request.json()
-    const { email, password, firstName, lastName, phone, role } = signupSchema.parse(body)
+    try {
+        const body = await request.json();
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    })
-
-    if (existingUser) {
-      return NextResponse.json(
-        { error: "User with this email already exists" },
-        { status: 400 }
-      )
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12)
-
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        firstName,
-        lastName,
-        phone,
-        role: role || UserRole.CUSTOMER,
-      },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        createdAt: true,
-      }
-    })
-
-    // Create customer profile if role is CUSTOMER
-    if (user.role === UserRole.CUSTOMER) {
-      await prisma.customer.create({
-        data: {
-          userId: user.id,
+        // Validate input using the new auth error handling
+        const validation = validateAuthInput(authSchemas.signup, body);
+        if (!validation.success) {
+            return NextResponse.json(
+                { error: validation.error.message, code: validation.error.code, field: validation.error.field },
+                { status: validation.error.statusCode },
+            );
         }
-      })
-    }
 
-    return NextResponse.json(
-      { 
-        message: "User created successfully",
-        user: {
-          id: user.id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          role: user.role,
+        const { email, password, firstName, lastName, phone, role } = validation.data;
+
+        // Check if user already exists (this will be caught by Prisma constraint error if we miss it)
+        const existingUser = await prisma.user.findFirst({
+            where: {
+                OR: [{ email }, ...(phone ? [{ phone }] : [])],
+            },
+        });
+
+        if (existingUser) {
+            const field = existingUser.email === email ? 'email' : 'phone';
+            const message =
+                field === 'email'
+                    ? 'An account with this email address already exists'
+                    : 'An account with this phone number already exists';
+
+            return NextResponse.json({ error: message, code: 'DUPLICATE_FIELD', field }, { status: 409 });
         }
-      },
-      { status: 201 }
-    )
-  } catch (error) {
-    console.error("Signup error:", error)
-    
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Invalid input", details: error.errors },
-        { status: 400 }
-      )
-    }
 
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    )
-  }
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 12);
+
+        // Create user
+        const user = await prisma.user.create({
+            data: {
+                email,
+                password: hashedPassword,
+                firstName,
+                lastName,
+                phone: phone || null, // Ensure empty string becomes null
+                role: role || UserRole.CUSTOMER,
+            },
+            select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+                createdAt: true,
+            },
+        });
+
+        // Create customer profile if role is CUSTOMER
+        if (user.role === UserRole.CUSTOMER) {
+            await prisma.customer.create({
+                data: {
+                    userId: user.id,
+                },
+            });
+        }
+
+        return NextResponse.json(
+            {
+                message: 'Account created successfully! You can now sign in.',
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    role: user.role,
+                },
+            },
+            { status: 201 },
+        );
+    } catch (error) {
+        const authError = handleAuthError(error);
+        return NextResponse.json(
+            {
+                error: authError.message,
+                code: authError.code,
+                ...(authError.field && { field: authError.field }),
+            },
+            { status: authError.statusCode },
+        );
+    }
 }

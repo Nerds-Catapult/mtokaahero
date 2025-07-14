@@ -12,12 +12,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
-import { Car, Loader2 } from "lucide-react";
+import { Loader2 } from 'lucide-react';
 import { getSession, signIn } from "next-auth/react";
+import Image from 'next/image';
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import Image from "next/image";
+import { useEffect, useState } from 'react';
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -30,10 +30,31 @@ export default function SignInPage() {
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
 
   useEffect(() => {
-    if (isAuthenticated) {
-      router.push(callbackUrl);
-    }
-  }, [isAuthenticated, router, callbackUrl]);
+      if (isAuthenticated) {
+          router.push(callbackUrl);
+      }
+
+      // Check for error in URL params (from NextAuth error redirect)
+      const error = searchParams.get('error');
+      if (error) {
+          setError(getErrorMessage(error));
+      }
+  }, [isAuthenticated, router, callbackUrl, searchParams]);
+
+  const getErrorMessage = (error: string) => {
+      switch (error) {
+          case 'CredentialsSignin':
+              return 'Invalid email or password';
+          case 'EmailNotVerified':
+              return 'Please verify your email address before signing in';
+          case 'AccountDeactivated':
+              return 'Your account has been deactivated. Please contact support';
+          case 'TooManyAttempts':
+              return 'Too many failed attempts. Please try again later';
+          default:
+              return 'An error occurred during sign in. Please try again';
+      }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,17 +69,19 @@ export default function SignInPage() {
       });
 
       if (result?.error) {
-        setError("Invalid email or password");
-      } else {
-        // Get fresh session and redirect
-        const session = await getSession();
-        if (session) {
-          router.push(callbackUrl);
-          router.refresh();
-        }
+          // Handle specific error messages from our auth provider
+          setError(getErrorMessage(result.error));
+      } else if (result?.ok) {
+          // Get fresh session and redirect
+          const session = await getSession();
+          if (session) {
+              router.push(callbackUrl);
+              router.refresh();
+          }
       }
     } catch (error) {
-      setError("An error occurred during sign in");
+      console.error('Sign in error:', error);
+      setError('An unexpected error occurred. Please try again');
     } finally {
       setIsLoading(false);
     }
