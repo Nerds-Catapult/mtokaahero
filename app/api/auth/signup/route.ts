@@ -11,10 +11,13 @@ export async function POST(request: Request) {
         // Validate input using the new auth error handling
         const validation = validateAuthInput(authSchemas.signup, body);
         if (!validation.success) {
-            const error = validation.error;
             return NextResponse.json(
-                { error: error.message, code: error.code, field: error.field },
-                { status: error.statusCode },
+                { 
+                    error: (validation as any).error.message, 
+                    code: (validation as any).error.code, 
+                    field: (validation as any).error.field 
+                },
+                { status: (validation as any).error.statusCode },
             );
         }
 
