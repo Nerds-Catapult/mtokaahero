@@ -1,3 +1,5 @@
+import { DollarSign, Calendar, CheckCircle, Star } from 'lucide-react';
+
 // Static data that doesn't need to be in the database
 export const stats = [
   { value: "500+", label: "Verified Professionals" },
@@ -71,24 +73,35 @@ export const recentBookings = [
   {
     id: '1',
     customerName: 'John Doe',
-    serviceName: 'Oil Change',
+    service: 'Oil Change',
     businessName: 'Quick Lube Auto',
-    scheduledDate: '2024-01-15',
-    scheduledTime: '10:00',
-    status: 'CONFIRMED',
+    date: '2024-01-15',
+    time: '10:00',
+    status: 'confirmed' as const,
     price: 45.00,
     location: 'Downtown, Nairobi'
   },
   {
     id: '2',
     customerName: 'Jane Smith',
-    serviceName: 'Brake Repair',
+    service: 'Brake Repair',
     businessName: 'Metro Garage',
-    scheduledDate: '2024-01-16',
-    scheduledTime: '14:30',
-    status: 'PENDING',
+    date: '2024-01-16',
+    time: '14:30',
+    status: 'pending' as const,
     price: 120.00,
     location: 'Westlands, Nairobi'
+  },
+  {
+    id: '3',
+    customerName: 'Mike Johnson',
+    service: 'Engine Diagnosis',
+    businessName: 'Express Auto',
+    date: '2024-01-14',
+    time: '09:00',
+    status: 'completed' as const,
+    price: 80.00,
+    location: 'Karen, Nairobi'
   }
 ];
 
@@ -123,7 +136,6 @@ export const allReviews = [
   {
     id: '1',
     customerName: 'John Doe',
-    serviceName: 'Oil Change',
     service: 'Oil Change',
     rating: 5,
     comment: 'Excellent service!',
@@ -135,7 +147,6 @@ export const allReviews = [
   {
     id: '2',
     customerName: 'Jane Smith',
-    serviceName: 'Brake Repair',
     service: 'Brake Repair',
     rating: 4,
     comment: 'Good work, but took longer than expected.',
@@ -148,12 +159,66 @@ export const allReviews = [
 
 // Dashboard data for service provider
 export const dashboardData = {
-  totalRevenue: 15420,
-  monthlyGrowth: 12,
-  totalBookings: 89,
-  completedServices: 76,
-  rating: 4.8,
-  totalReviews: 156
+  mechanic: [
+    {
+      title: 'Total Revenue',
+      value: '$15,420',
+      change: '+12%',
+      trend: 'up' as const,
+      icon: DollarSign
+    },
+    {
+      title: 'Active Bookings',
+      value: '23',
+      change: '+5%',
+      trend: 'up' as const,
+      icon: Calendar
+    },
+    {
+      title: 'Completed Services',
+      value: '156',
+      change: '+8%',
+      trend: 'up' as const,
+      icon: CheckCircle
+    },
+    {
+      title: 'Customer Rating',
+      value: '4.8',
+      change: '+0.2',
+      trend: 'up' as const,
+      icon: Star
+    }
+  ],
+  garage: [
+    {
+      title: 'Total Revenue',
+      value: '$32,840',
+      change: '+18%',
+      trend: 'up' as const,
+      icon: DollarSign
+    },
+    {
+      title: 'Active Bookings',
+      value: '45',
+      change: '+12%',
+      trend: 'up' as const,
+      icon: Calendar
+    },
+    {
+      title: 'Completed Services',
+      value: '234',
+      change: '+15%',
+      trend: 'up' as const,
+      icon: CheckCircle
+    },
+    {
+      title: 'Customer Rating',
+      value: '4.7',
+      change: '+0.1',
+      trend: 'up' as const,
+      icon: Star
+    }
+  ]
 };
 
 export const recentReviews = [
@@ -173,11 +238,21 @@ export const recentReviews = [
   }
 ];
 
-export const chartData = [
-  { name: 'Jan', value: 1200 },
-  { name: 'Feb', value: 1400 },
-  { name: 'Mar', value: 1100 },
-  { name: 'Apr', value: 1600 },
-  { name: 'May', value: 1800 },
-  { name: 'Jun', value: 2000 }
-];
+export const chartData = {
+  revenue: [
+    { month: 'Jan', revenue: 1200 },
+    { month: 'Feb', revenue: 1400 },
+    { month: 'Mar', revenue: 1100 },
+    { month: 'Apr', revenue: 1600 },
+    { month: 'May', revenue: 1800 },
+    { month: 'Jun', revenue: 2000 }
+  ],
+  bookings: [
+    { month: 'Jan', bookings: 45 },
+    { month: 'Feb', bookings: 52 },
+    { month: 'Mar', bookings: 48 },
+    { month: 'Apr', bookings: 61 },
+    { month: 'May', bookings: 58 },
+    { month: 'Jun', bookings: 67 }
+  ]
+};

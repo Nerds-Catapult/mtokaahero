@@ -65,7 +65,7 @@ export class ProximityService {
     } = options;
 
     // Filter by service type if specified
-    let filteredServices = serviceType 
+    const filteredServices = serviceType 
       ? services.filter(service => service.type === serviceType)
       : services;
 

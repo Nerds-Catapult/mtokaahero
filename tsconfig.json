@@ -11,6 +11,7 @@
     "checkJs": true,
     "resolveJsonModule": true,
     "moduleDetection": "force",
+    "strictNullChecks": false,
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,

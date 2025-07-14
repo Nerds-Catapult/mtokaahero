@@ -57,7 +57,6 @@ export function ServiceProviderDashboard() {
         </TabsContent>
 
         <TabsContent value="bookings">
-          {/* @ts-ignore */}
           <RecentBookings bookings={recentBookings} />
         </TabsContent>
 
