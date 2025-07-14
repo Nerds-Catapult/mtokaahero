@@ -11,7 +11,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { createService } from "@/lib/actions/shared/serviceActions"
 
 const serviceFormSchema = z.object({
@@ -49,11 +49,7 @@ export function AddServiceModal({ open, onOpenChange, businessId, onServiceAdded
 
   const onSubmit = async (data: ServiceFormValues) => {
     if (!businessId) {
-      toast({
-        title: "Error",
-        description: "Business ID is missing. Cannot add service.",
-        variant: "destructive",
-      })
+      toast.error("Business ID is required to add a service.")
       return
     }
     
@@ -70,26 +66,15 @@ export function AddServiceModal({ open, onOpenChange, businessId, onServiceAdded
       const response = await createService(businessId, serviceData)
       
       if (response.success) {
-        toast({
-          title: "Service Added",
-          description: "The new service has been added successfully.",
-        })
+        toast.success("Service added successfully.")
         form.reset()
         onOpenChange(false)
         onServiceAdded?.()
       } else {
-        toast({
-          title: "Error",
-          description: response.error?.message || "Failed to add service.",
-          variant: "destructive",
-        })
+        toast.error(response.error?.message || "Failed to add service.")
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("An unexpected error occurred. Please try again.")
     } finally {
       setIsSubmitting(false)
     }

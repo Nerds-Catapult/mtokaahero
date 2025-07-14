@@ -10,9 +10,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { toast } from "@/components/ui/use-toast"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Clock, MapPin, Star } from "lucide-react"
+import { toast } from 'sonner';
 
 const findServicesSchema = z.object({
   location: z.string().min(3, "Please enter a location"),
@@ -77,16 +77,9 @@ export function FindNearbyServicesModal({ open, onOpenChange }: FindNearbyServic
       await new Promise((resolve) => setTimeout(resolve, 1500))
       
       setSearchResults(mockServiceProviders)
-      toast({
-        title: "Search Complete",
-        description: `Found ${mockServiceProviders.length} service providers near ${data.location}`,
-      })
+      toast.success(`Found ${mockServiceProviders.length} service providers near ${data.location}`)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "An error occurred while searching. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("An error occurred while searching. Please try again.")
     } finally {
       setIsSearching(false)
     }
@@ -94,19 +87,13 @@ export function FindNearbyServicesModal({ open, onOpenChange }: FindNearbyServic
 
   const handleViewDetails = (serviceProviderId: string) => {
     // In a real app, this would navigate to the service provider's details page
-    toast({
-      title: "Navigation",
-      description: `Viewing details for service provider ${serviceProviderId}`,
-    })
+    toast.success(`Viewing details for service provider ${serviceProviderId}`)
     onOpenChange(false)
   }
 
   const handleBookService = (serviceProviderId: string) => {
     // In a real app, this would open the booking form pre-filled with this service provider
-    toast({
-      title: "Booking",
-      description: `Opening booking form for service provider ${serviceProviderId}`,
-    })
+    toast.success(`Opening booking form for service provider ${serviceProviderId}`)
     onOpenChange(false)
   }
 

@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 
 const businessInfoSchema = z.object({
   name: z.string().min(2, "Business name is required"),
@@ -111,11 +111,7 @@ export function UpdateBusinessInfoModal({
 
   const onSubmit = async (data: BusinessInfoFormValues) => {
     if (!businessId) {
-      toast({
-        title: "Error",
-        description: "Business ID is missing. Cannot update information.",
-        variant: "destructive",
-      })
+      toast.error("Business ID is required to update information.")
       return
     }
     
@@ -125,18 +121,11 @@ export function UpdateBusinessInfoModal({
       // In a real implementation, this would call a server action to update the business
       // For now, we'll simulate success after a short delay
       await new Promise((resolve) => setTimeout(resolve, 1000))
-      
-      toast({
-        title: "Business Updated",
-        description: "Your business information has been updated successfully.",
-      })
+
+      toast.success("Your business information has been updated successfully.")
       onOpenChange(false)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("An unexpected error occurred. Please try again.")
     } finally {
       setIsSubmitting(false)
     }

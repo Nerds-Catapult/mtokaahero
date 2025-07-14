@@ -1,14 +1,25 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+
+/** @type {import("next").NextConfig} */
+const config = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   images: {
-    unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'storage.googleapis.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'udeaw7iy2zslq3k3.public.blob.vercel-storage.com',
+      },
+    ],
   },
-}
+};
 
-export default nextConfig
+export default config;

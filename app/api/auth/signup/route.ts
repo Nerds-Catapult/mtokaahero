@@ -12,8 +12,12 @@ export async function POST(request: Request) {
         const validation = validateAuthInput(authSchemas.signup, body);
         if (!validation.success) {
             return NextResponse.json(
-                { error: validation.error.message, code: validation.error.code, field: validation.error.field },
-                { status: validation.error.statusCode },
+                { 
+                    error: (validation as any).error.message, 
+                    code: (validation as any).error.code, 
+                    field: (validation as any).error.field 
+                },
+                { status: (validation as any).error.statusCode },
             );
         }
 

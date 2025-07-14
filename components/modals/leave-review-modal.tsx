@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 
 import { Star } from "lucide-react"
 
@@ -56,11 +56,7 @@ export function LeaveReviewModal({
 
   const onSubmit = async (data: ReviewFormValues) => {
     if (!userId) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to leave a review.",
-        variant: "destructive",
-      })
+      toast.error("You must be logged in to leave a review.")
       return
     }
     
@@ -73,18 +69,11 @@ export function LeaveReviewModal({
       
       const businessName = mockBusinesses.find(b => b.id === data.businessId)?.name || "the business"
       
-      toast({
-        title: "Review Submitted",
-        description: `Thank you for reviewing ${businessName}! Your feedback helps others in the community.`,
-      })
+      toast.success(`Thank you for reviewing ${businessName}! Your feedback helps others in the community.`)
       form.reset()
       onOpenChange(false)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("An unexpected error occurred. Please try again.")
     } finally {
       setIsSubmitting(false)
     }

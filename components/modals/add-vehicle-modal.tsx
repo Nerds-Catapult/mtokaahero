@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 
 const vehicleFormSchema = z.object({
   make: z.string().min(1, "Make is required"),
@@ -55,11 +55,7 @@ export function AddVehicleModal({ open, onOpenChange, userId }: AddVehicleModalP
 
   const onSubmit = async (data: VehicleFormValues) => {
     if (!userId) {
-      toast({
-        title: "Error",
-        description: "User information is missing. Cannot add vehicle.",
-        variant: "destructive",
-      })
+      toast.error("User ID is required to add a vehicle.")
       return
     }
     
@@ -70,18 +66,11 @@ export function AddVehicleModal({ open, onOpenChange, userId }: AddVehicleModalP
       // For now, we'll simulate success after a short delay
       await new Promise((resolve) => setTimeout(resolve, 1000))
       
-      toast({
-        title: "Vehicle Added",
-        description: `Your ${data.year} ${data.make} ${data.model} has been added to your profile.`,
-      })
+      toast.success("Vehicle added successfully.")
       form.reset()
       onOpenChange(false)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("An unexpected error occurred. Please try again.")
     } finally {
       setIsSubmitting(false)
     }

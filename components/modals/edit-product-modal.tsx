@@ -10,9 +10,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { toast } from "@/components/ui/use-toast"
+import { Textarea } from '@/components/ui/textarea';
 import { updateProduct } from "@/lib/actions/productActions"
+import { toast } from 'sonner';
 
 const productSchema = z.object({
   name: z.string().min(2, "Product name is required"),
@@ -188,25 +188,14 @@ export function EditProductModal({ open, onOpenChange, product, businessId, onPr
       const response = await updateProduct(product.id, businessId, productData)
       
       if (response.success) {
-        toast({
-          title: "Product updated",
-          description: "Your product has been updated successfully.",
-        })
+        toast.success("Product updated successfully.")
         onProductUpdated()
         onOpenChange(false)
       } else {
-        toast({
-          title: "Error",
-          description: response.error?.message || "Failed to update product.",
-          variant: "destructive",
-        })
+        toast.error(response.error?.message || "Failed to update product.")
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("An unexpected error occurred. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
