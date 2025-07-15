@@ -14,6 +14,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/use-auth';
+import { useBusinessInit } from '@/hooks/use-business-init';
 import { cn } from '@/lib/utils';
 import { Bell, Calendar, Car, ChevronDown, LogOut, Menu, Settings, Star, TrendingUp, User, Users } from 'lucide-react';
 import { signOut } from 'next-auth/react';
@@ -30,6 +31,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const { user, isLoading } = useAuth();
+
+    // Initialize business data when user logs in
+    useBusinessInit();
 
     // Helper function to get user role display name
     const getRoleDisplayName = (role: string | undefined) => {
@@ -106,12 +110,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   },
               ]
             : [
-                //   {
-                //       name: 'Bookings',
-                //       href: '/dashboard/bookings',
-                //       icon: Calendar,
-                //       current: pathname === '/dashboard/bookings',
-                //   },
+                  //   {
+                  //       name: 'Bookings',
+                  //       href: '/dashboard/bookings',
+                  //       icon: Calendar,
+                  //       current: pathname === '/dashboard/bookings',
+                  //   },
               ]),
         ...(user?.role === 'SPAREPARTS_SHOP'
             ? [
