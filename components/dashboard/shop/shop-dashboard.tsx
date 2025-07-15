@@ -4,6 +4,8 @@ import { DollarSign, Package, ShoppingCart, TrendingUp } from "lucide-react"
 import { SimpleBarChart, SimpleLineChart, SimplePieChart } from "../charts/chart-components"
 import { ChartSection, DashboardHeader } from "../shared/dashboard-components"
 import { StatsGrid } from "../shared/stats-grid"
+import { getMyBusinesses } from "@/lib/actions/shared/serviceActions"
+
 import {
     InventoryOverview,
     LowStockAlerts,
@@ -11,6 +13,7 @@ import {
     ShopQuickActions,
     TopSellingProducts
 } from "./shop-components"
+import { useEffect } from "react"
 
 // Mock data for shop dashboard
 const shopStats = [
@@ -66,6 +69,22 @@ const mockTopProducts = [
 export function ShopDashboard() {
   const { user } = useAuth()
   const userName = user?.name || ""
+
+
+  const fetchBusinesses = async () => {
+    if (user?.id) {
+      const business = await getMyBusinesses(user.id)
+      return business.data ? [business.data] : []
+    }
+    return []
+  }
+  useEffect(() => {
+    const fetchData = async () => {
+      const businesses = await fetchBusinesses()
+      console.log(businesses)
+    }
+    fetchData()
+  }, [])
 
   return (
     <div className="space-y-6">
