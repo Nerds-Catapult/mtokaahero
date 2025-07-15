@@ -81,7 +81,7 @@ export function ShopDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       const businesses = await fetchBusinesses()
-      console.log(businesses)
+      console.log("businesses", businesses) // For debugging purposes
     }
     fetchData()
   }, [])
