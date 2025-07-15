@@ -3,14 +3,15 @@ import { useAuth } from "@/hooks/use-auth"
 import { DollarSign, Package, ShoppingCart, TrendingUp } from "lucide-react"
 import { SimpleBarChart, SimpleLineChart, SimplePieChart } from "../charts/chart-components"
 import { ChartSection, DashboardHeader } from "../shared/dashboard-components"
-import { StatsGrid } from "../shared/stats-grid"
+import { StatsGrid } from '../shared/stats-grid';
+
 import {
     InventoryOverview,
     LowStockAlerts,
     RecentOrders,
     ShopQuickActions,
-    TopSellingProducts
-} from "./shop-components"
+    TopSellingProducts,
+} from './shop-components';
 
 // Mock data for shop dashboard
 const shopStats = [
@@ -68,70 +69,62 @@ export function ShopDashboard() {
   const userName = user?.name || ""
 
   return (
-    <div className="space-y-6">
-      <DashboardHeader 
-        title="Shop Dashboard"
-        description="Manage your automotive parts store and track sales performance."
-        userName={userName}
-      />
+      <div className="space-y-6">
+          <DashboardHeader
+              title="Shop Dashboard"
+              description="Manage your automotive parts store and track sales performance."
+              userName={userName}
+          />
 
-      <StatsGrid stats={shopStats} />
+          {/* Stats Grid now fetches data from Zustand store */}
+          <StatsGrid />
 
-      {/* Charts Section */}
-      <div className="grid lg:grid-cols-2 gap-6 mb-8">
-        <ChartSection
-          title="Revenue Trend"
-          description="Monthly revenue over the last 6 months"
-        >
-          <SimpleLineChart data={shopChartData.revenue} />
-        </ChartSection>
+          {/* Charts Section */}
+          <div className="grid lg:grid-cols-2 gap-6 mb-8">
+              <ChartSection title="Revenue Trend" description="Monthly revenue over the last 6 months">
+                  <SimpleLineChart data={shopChartData.revenue} />
+              </ChartSection>
 
-        <ChartSection
-          title="Orders Overview"
-          description="Monthly orders comparison"
-        >
-          <SimpleBarChart data={shopChartData.orders} />
-        </ChartSection>
+              <ChartSection title="Orders Overview" description="Monthly orders comparison">
+                  <SimpleBarChart data={shopChartData.orders} />
+              </ChartSection>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-6 mb-8">
+              <ChartSection title="Product Categories" description="Sales distribution by category">
+                  <SimplePieChart data={shopChartData.categories} />
+              </ChartSection>
+
+              <div className="lg:col-span-2">
+                  <ShopQuickActions />
+              </div>
+          </div>
+
+          {/* Main Content Tabs */}
+          <Tabs defaultValue="overview" className="space-y-6">
+              <TabsList>
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="orders">Recent Orders</TabsTrigger>
+                  <TabsTrigger value="inventory">Inventory</TabsTrigger>
+                  <TabsTrigger value="products">Top Products</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="overview" className="space-y-6">
+                  <InventoryOverview />
+              </TabsContent>
+
+              <TabsContent value="orders">
+                  <RecentOrders orders={mockOrders} />
+              </TabsContent>
+
+              <TabsContent value="inventory">
+                  <LowStockAlerts products={mockProducts} />
+              </TabsContent>
+
+              <TabsContent value="products">
+                  <TopSellingProducts products={mockTopProducts} />
+              </TabsContent>
+          </Tabs>
       </div>
-
-      <div className="grid lg:grid-cols-3 gap-6 mb-8">
-        <ChartSection
-          title="Product Categories"
-          description="Sales distribution by category"
-        >
-          <SimplePieChart data={shopChartData.categories} />
-        </ChartSection>
-
-        <div className="lg:col-span-2">
-          <ShopQuickActions />
-        </div>
-      </div>
-
-      {/* Main Content Tabs */}
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="orders">Recent Orders</TabsTrigger>
-          <TabsTrigger value="inventory">Inventory</TabsTrigger>
-          <TabsTrigger value="products">Top Products</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-6">
-          <InventoryOverview />
-        </TabsContent>
-
-        <TabsContent value="orders">
-          <RecentOrders orders={mockOrders} />
-        </TabsContent>
-
-        <TabsContent value="inventory">
-          <LowStockAlerts products={mockProducts} />
-        </TabsContent>
-
-        <TabsContent value="products">
-          <TopSellingProducts products={mockTopProducts} />
-        </TabsContent>
-      </Tabs>
-    </div>
-  )
+  );
 }

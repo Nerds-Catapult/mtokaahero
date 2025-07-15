@@ -168,8 +168,12 @@ export default function MarketplacePage() {
                         </Link>
                     </nav>
                     <div className="flex items-center space-x-3">
-                        <Button variant="ghost">Sign In</Button>
-                        <Button>List Your Business</Button>
+                        <Link href="/auth/signin">
+                            <Button variant="ghost">Sign In</Button>
+                        </Link>
+                        <Link href="/auth/signup">
+                            <Button>List Your Business</Button>
+                        </Link>
                     </div>
                 </div>
             </header>
