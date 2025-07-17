@@ -3,6 +3,8 @@ import { UpdateBusinessInfoModal } from '@/components/modals/update-business-inf
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useBusinessStore } from '@/lib/stores/business-store';
 import { Calendar, Edit, Eye, Plus, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -82,20 +84,50 @@ export function ServiceProviderQuickActions() {
     );
 }
 
-interface Booking {
-    id: string | number;
-    customerName: string;
-    service: string;
-    date: string;
-    time: string;
-    status: 'confirmed' | 'pending' | 'completed' | 'cancelled';
-}
+export function RecentBookings() {
+    const { recentBookings, isLoadingBookings, bookingsError } = useBusinessStore();
 
-interface RecentBookingsProps {
-    bookings: Booking[];
-}
+    if (isLoadingBookings) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Recent Bookings</CardTitle>
+                    <CardDescription>Your latest customer appointments</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        {[...Array(3)].map((_, i) => (
+                            <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
+                                <div className="space-y-2">
+                                    <Skeleton className="h-4 w-32" />
+                                    <Skeleton className="h-3 w-24" />
+                                    <Skeleton className="h-3 w-20" />
+                                </div>
+                                <Skeleton className="h-6 w-16" />
+                            </div>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
 
-export function RecentBookings({ bookings }: RecentBookingsProps) {
+    if (bookingsError) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Recent Bookings</CardTitle>
+                    <CardDescription>Your latest customer appointments</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-center py-6 text-muted-foreground">
+                        Error loading bookings: {bookingsError}
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
     return (
         <Card>
             <CardHeader>
@@ -104,49 +136,43 @@ export function RecentBookings({ bookings }: RecentBookingsProps) {
             </CardHeader>
             <CardContent>
                 <div className="space-y-4">
-                    {bookings.map(booking => (
-                        <div key={booking.id} className="flex items-center justify-between p-4 border rounded-lg">
-                            <div>
-                                <h4 className="font-medium">{booking.customerName}</h4>
-                                <p className="text-sm text-muted-foreground">{booking.service}</p>
-                                <p className="text-xs text-muted-foreground">
-                                    {booking.date} at {booking.time}
-                                </p>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Badge
-                                    variant={
-                                        booking.status === 'confirmed'
-                                            ? 'default'
-                                            : booking.status === 'pending'
-                                            ? 'secondary'
-                                            : 'outline'
-                                    }
-                                >
-                                    {booking.status}
-                                </Badge>
-                            </div>
+                    {recentBookings.length === 0 ? (
+                        <div className="text-center py-6 text-muted-foreground">
+                            No recent bookings found
                         </div>
-                    ))}
+                    ) : (
+                        recentBookings.map(booking => (
+                            <div key={booking.id} className="flex items-center justify-between p-4 border rounded-lg">
+                                <div>
+                                    <h4 className="font-medium">{booking.customerName}</h4>
+                                    <p className="text-sm text-muted-foreground">{booking.service}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {booking.date} at {booking.time}
+                                    </p>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <Badge
+                                        variant={
+                                            booking.status === 'confirmed'
+                                                ? 'default'
+                                                : booking.status === 'pending'
+                                                ? 'secondary'
+                                                : 'outline'
+                                        }
+                                    >
+                                        {booking.status}
+                                    </Badge>
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </div>
             </CardContent>
         </Card>
     );
 }
 
-interface Review {
-    id: string | number;
-    customerName: string;
-    rating: number;
-    comment: string;
-    date: string;
-}
-
-interface CustomerReviewsProps {
-    reviews: Review[];
-}
-
-export function CustomerReviews({ reviews }: CustomerReviewsProps) {
+export function CustomerReviews({ reviews }: { reviews: any[] }) {
     return (
         <Card>
             <CardHeader>
@@ -183,6 +209,61 @@ export function CustomerReviews({ reviews }: CustomerReviewsProps) {
 }
 
 export function BusinessPerformance() {
+    const { performanceMetrics, isLoadingPerformance, performanceError } = useBusinessStore();
+
+    if (isLoadingPerformance) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Business Performance</CardTitle>
+                    <CardDescription>Your key metrics this month</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        {[...Array(4)].map((_, i) => (
+                            <div key={i} className="flex justify-between items-center">
+                                <Skeleton className="h-4 w-32" />
+                                <Skeleton className="h-4 w-16" />
+                            </div>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (performanceError) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Business Performance</CardTitle>
+                    <CardDescription>Your key metrics this month</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-center py-6 text-muted-foreground">
+                        Error loading performance data: {performanceError}
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (!performanceMetrics) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Business Performance</CardTitle>
+                    <CardDescription>Your key metrics this month</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-center py-6 text-muted-foreground">
+                        No performance data available
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
     return (
         <Card>
             <CardHeader>
@@ -195,20 +276,20 @@ export function BusinessPerformance() {
                         <span className="text-sm text-muted-foreground">Customer Satisfaction</span>
                         <div className="flex items-center">
                             <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                            <span className="font-medium">4.8/5</span>
+                            <span className="font-medium">{performanceMetrics.customerSatisfaction}/5</span>
                         </div>
                     </div>
                     <div className="flex justify-between items-center">
                         <span className="text-sm text-muted-foreground">Response Time</span>
-                        <span className="font-medium text-green-600">&lt; 2 hours</span>
+                        <span className="font-medium text-green-600">{performanceMetrics.responseTime}</span>
                     </div>
                     <div className="flex justify-between items-center">
                         <span className="text-sm text-muted-foreground">Completion Rate</span>
-                        <span className="font-medium">98%</span>
+                        <span className="font-medium">{performanceMetrics.completionRate}%</span>
                     </div>
                     <div className="flex justify-between items-center">
                         <span className="text-sm text-muted-foreground">Repeat Customers</span>
-                        <span className="font-medium">67%</span>
+                        <span className="font-medium">{performanceMetrics.repeatCustomers}%</span>
                     </div>
                 </div>
             </CardContent>

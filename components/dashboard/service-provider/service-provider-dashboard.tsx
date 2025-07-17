@@ -66,7 +66,7 @@ export function ServiceProviderDashboard() {
                 </TabsContent>
 
                 <TabsContent value="bookings">
-                    <RecentBookings bookings={recentBookings} />
+                    <RecentBookings />
                 </TabsContent>
 
                 <TabsContent value="reviews">

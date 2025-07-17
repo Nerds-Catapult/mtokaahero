@@ -38,8 +38,13 @@ export async function GET(request: Request) {
       },
       include: {
         customer: {
-          select: {
-            name: true,
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
           },
         },
         service: {
@@ -58,7 +63,7 @@ export async function GET(request: Request) {
     // Transform the data to match the frontend interface
     const transformedBookings = bookings.map((booking) => ({
       id: booking.id,
-      customerName: booking.customer?.name || 'Unknown Customer',
+      customerName: `${booking.customer?.user?.firstName || ''} ${booking.customer?.user?.lastName || ''}`.trim() || 'Unknown Customer',
       service: booking.service?.title || 'Unknown Service',
       date: booking.scheduledDate.toISOString().split('T')[0],
       time: booking.scheduledTime,
