@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
-import { dashboardData, recentBookings, recentReviews } from '@/lib/constants';
+import { recentReviews } from '@/lib/constants';
 import { useBusinessStore } from '@/lib/stores/business-store';
 import { SimpleBarChart, SimpleLineChart } from '../charts/chart-components';
 import { ChartSection, DashboardHeader } from "../shared/dashboard-components";
