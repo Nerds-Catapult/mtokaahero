@@ -26,6 +26,23 @@ export interface BusinessChartData {
   bookings: ChartDataPoint[];
 }
 
+export interface RecentBooking {
+  id: string;
+  customerName: string;
+  service: string;
+  date: string;
+  time: string;
+  status: 'confirmed' | 'pending' | 'completed' | 'cancelled';
+  price?: number;
+}
+
+export interface BusinessPerformance {
+  customerSatisfaction: number;
+  responseTime: string;
+  completionRate: number;
+  repeatCustomers: number;
+}
+
 export interface Business {
   id: string;
   businessName: string;
@@ -52,20 +69,32 @@ interface BusinessState {
   // Chart data
   chartData: BusinessChartData | null;
   
+  // Recent bookings
+  recentBookings: RecentBooking[];
+  
+  // Business performance metrics
+  performanceMetrics: BusinessPerformance | null;
+  
   // Loading states
   isLoadingBusiness: boolean;
   isLoadingStats: boolean;
   isLoadingChartData: boolean;
+  isLoadingBookings: boolean;
+  isLoadingPerformance: boolean;
   
   // Error states
   businessError: string | null;
   statsError: string | null;
   chartDataError: string | null;
+  bookingsError: string | null;
+  performanceError: string | null;
   
   // Last fetch times
   lastBusinessFetch: number | null;
   lastStatsFetch: number | null;
   lastChartDataFetch: number | null;
+  lastBookingsFetch: number | null;
+  lastPerformanceFetch: number | null;
   
   // Actions
   setBusinessData: (business: Business) => void;
@@ -101,15 +130,23 @@ export const useBusinessStore = create<BusinessState>()(
         business: null,
         stats: null,
         chartData: null,
+        recentBookings: [],
+        performanceMetrics: null,
         isLoadingBusiness: false,
         isLoadingStats: false,
         isLoadingChartData: false,
+        isLoadingBookings: false,
+        isLoadingPerformance: false,
         businessError: null,
         statsError: null,
         chartDataError: null,
+        bookingsError: null,
+        performanceError: null,
         lastBusinessFetch: null,
         lastStatsFetch: null,
         lastChartDataFetch: null,
+        lastBookingsFetch: null,
+        lastPerformanceFetch: null,
 
         // Setters
         setBusinessData: (business) => set({ business, lastBusinessFetch: Date.now() }),
