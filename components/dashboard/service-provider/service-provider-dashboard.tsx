@@ -20,7 +20,6 @@ export function ServiceProviderDashboard() {
                 userName={userName}
             />
 
-            {/* Stats Grid now fetches data from Zustand store */}
             <StatsGrid />
 
             {/* Charts Section */}
