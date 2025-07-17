@@ -1,5 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/hooks/use-auth"
+import { useBusinessStore } from '@/lib/stores/business-store';
 import { DollarSign, Package, ShoppingCart, TrendingUp } from "lucide-react"
 import { SimpleBarChart, SimpleLineChart, SimplePieChart } from "../charts/chart-components"
 import { ChartSection, DashboardHeader } from "../shared/dashboard-components"
@@ -12,39 +13,6 @@ import {
     ShopQuickActions,
     TopSellingProducts,
 } from './shop-components';
-
-// Mock data for shop dashboard
-const shopStats = [
-  { title: "Total Revenue", value: "$12,453", change: "+20.1%", icon: DollarSign },
-  { title: "Products Sold", value: "1,234", change: "+15.3%", icon: Package },
-  { title: "Total Orders", value: "89", change: "+12.5%", icon: ShoppingCart },
-  { title: "Conversion Rate", value: "3.2%", change: "+2.1%", icon: TrendingUp },
-]
-
-const shopChartData = {
-  revenue: [
-    { month: "Jan", revenue: 8500 },
-    { month: "Feb", revenue: 9200 },
-    { month: "Mar", revenue: 10100 },
-    { month: "Apr", revenue: 11200 },
-    { month: "May", revenue: 10800 },
-    { month: "Jun", revenue: 12453 },
-  ],
-  orders: [
-    { month: "Jan", value: 65 },
-    { month: "Feb", value: 72 },
-    { month: "Mar", value: 78 },
-    { month: "Apr", value: 81 },
-    { month: "May", value: 85 },
-    { month: "Jun", value: 89 },
-  ],
-  categories: [
-    { name: "Engine Parts", value: 35 },
-    { name: "Brake Components", value: 25 },
-    { name: "Filters", value: 20 },
-    { name: "Electronics", value: 20 },
-  ]
-}
 
 const mockProducts = [
   { id: "1", name: "Oil Filter", sku: "OF001", stock: 5, minStock: 10, price: 15.99, status: "low_stock" as const },
@@ -66,6 +34,7 @@ const mockTopProducts = [
 
 export function ShopDashboard() {
   const { user } = useAuth()
+  const { chartData, isLoadingChartData } = useBusinessStore()
   const userName = user?.name || ""
 
   return (
@@ -82,17 +51,49 @@ export function ShopDashboard() {
           {/* Charts Section */}
           <div className="grid lg:grid-cols-2 gap-6 mb-8">
               <ChartSection title="Revenue Trend" description="Monthly revenue over the last 6 months">
-                  <SimpleLineChart data={shopChartData.revenue} />
+                  {isLoadingChartData ? (
+                      <div className="h-[300px] w-full flex items-center justify-center bg-gray-50 rounded-lg">
+                          <div className="text-center">
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+                              <p className="text-sm text-gray-600 mt-2">Loading chart data...</p>
+                          </div>
+                      </div>
+                  ) : (
+                      <SimpleLineChart data={chartData?.revenue || []} />
+                  )}
               </ChartSection>
 
               <ChartSection title="Orders Overview" description="Monthly orders comparison">
-                  <SimpleBarChart data={shopChartData.orders} />
+                  {isLoadingChartData ? (
+                      <div className="h-[300px] w-full flex items-center justify-center bg-gray-50 rounded-lg">
+                          <div className="text-center">
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+                              <p className="text-sm text-gray-600 mt-2">Loading chart data...</p>
+                          </div>
+                      </div>
+                  ) : (
+                      <SimpleBarChart data={chartData?.bookings || []} />
+                  )}
               </ChartSection>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6 mb-8">
               <ChartSection title="Product Categories" description="Sales distribution by category">
-                  <SimplePieChart data={shopChartData.categories} />
+                  {isLoadingChartData ? (
+                      <div className="h-[300px] w-full flex items-center justify-center bg-gray-50 rounded-lg">
+                          <div className="text-center">
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+                              <p className="text-sm text-gray-600 mt-2">Loading chart data...</p>
+                          </div>
+                      </div>
+                  ) : (
+                      <SimplePieChart data={[
+                          { name: "Engine Parts", value: 35 },
+                          { name: "Brake Components", value: 25 },
+                          { name: "Filters", value: 20 },
+                          { name: "Electronics", value: 20 },
+                      ]} />
+                  )}
               </ChartSection>
 
               <div className="lg:col-span-2">
