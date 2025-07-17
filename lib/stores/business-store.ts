@@ -100,17 +100,25 @@ interface BusinessState {
   setBusinessData: (business: Business) => void;
   setStats: (stats: BusinessStats) => void;
   setChartData: (chartData: BusinessChartData) => void;
+  setRecentBookings: (bookings: RecentBooking[]) => void;
+  setPerformanceMetrics: (performance: BusinessPerformance) => void;
   setLoadingBusiness: (loading: boolean) => void;
   setLoadingStats: (loading: boolean) => void;
   setLoadingChartData: (loading: boolean) => void;
+  setLoadingBookings: (loading: boolean) => void;
+  setLoadingPerformance: (loading: boolean) => void;
   setBusinessError: (error: string | null) => void;
   setStatsError: (error: string | null) => void;
   setChartDataError: (error: string | null) => void;
+  setBookingsError: (error: string | null) => void;
+  setPerformanceError: (error: string | null) => void;
   
   // Async actions
   fetchBusinessData: (userId: string) => Promise<void>;
   fetchStats: (businessId: string) => Promise<void>;
   fetchChartData: (businessId: string) => Promise<void>;
+  fetchRecentBookings: (businessId: string) => Promise<void>;
+  fetchPerformanceMetrics: (businessId: string) => Promise<void>;
   refreshData: (userId: string) => Promise<void>;
   
   // Clear functions
@@ -152,12 +160,18 @@ export const useBusinessStore = create<BusinessState>()(
         setBusinessData: (business) => set({ business, lastBusinessFetch: Date.now() }),
         setStats: (stats) => set({ stats, lastStatsFetch: Date.now() }),
         setChartData: (chartData) => set({ chartData, lastChartDataFetch: Date.now() }),
+        setRecentBookings: (recentBookings) => set({ recentBookings, lastBookingsFetch: Date.now() }),
+        setPerformanceMetrics: (performanceMetrics) => set({ performanceMetrics, lastPerformanceFetch: Date.now() }),
         setLoadingBusiness: (isLoadingBusiness) => set({ isLoadingBusiness }),
         setLoadingStats: (isLoadingStats) => set({ isLoadingStats }),
         setLoadingChartData: (isLoadingChartData) => set({ isLoadingChartData }),
+        setLoadingBookings: (isLoadingBookings) => set({ isLoadingBookings }),
+        setLoadingPerformance: (isLoadingPerformance) => set({ isLoadingPerformance }),
         setBusinessError: (businessError) => set({ businessError }),
         setStatsError: (statsError) => set({ statsError }),
         setChartDataError: (chartDataError) => set({ chartDataError }),
+        setBookingsError: (bookingsError) => set({ bookingsError }),
+        setPerformanceError: (performanceError) => set({ performanceError }),
 
         // Async actions
         fetchBusinessData: async (userId: string) => {
@@ -189,6 +203,8 @@ export const useBusinessStore = create<BusinessState>()(
             if (data.business?.id) {
               get().fetchStats(data.business.id);
               get().fetchChartData(data.business.id);
+              get().fetchRecentBookings(data.business.id);
+              get().fetchPerformanceMetrics(data.business.id);
             }
           } catch (error) {
             set({ 
@@ -262,6 +278,70 @@ export const useBusinessStore = create<BusinessState>()(
           }
         },
 
+        fetchRecentBookings: async (businessId: string) => {
+          const state = get();
+          
+          // Check cache
+          if (state.recentBookings.length > 0 && state.lastBookingsFetch && 
+              Date.now() - state.lastBookingsFetch < CACHE_DURATION) {
+            return;
+          }
+
+          set({ isLoadingBookings: true, bookingsError: null });
+
+          try {
+            const response = await fetch(`/api/business/bookings?businessId=${businessId}&limit=5`);
+            
+            if (!response.ok) {
+              throw new Error('Failed to fetch recent bookings');
+            }
+
+            const data = await response.json();
+            set({ 
+              recentBookings: data.bookings, 
+              lastBookingsFetch: Date.now(),
+              isLoadingBookings: false 
+            });
+          } catch (error) {
+            set({ 
+              bookingsError: error instanceof Error ? error.message : 'Unknown error',
+              isLoadingBookings: false 
+            });
+          }
+        },
+
+        fetchPerformanceMetrics: async (businessId: string) => {
+          const state = get();
+          
+          // Check cache
+          if (state.performanceMetrics && state.lastPerformanceFetch && 
+              Date.now() - state.lastPerformanceFetch < CACHE_DURATION) {
+            return;
+          }
+
+          set({ isLoadingPerformance: true, performanceError: null });
+
+          try {
+            const response = await fetch(`/api/business/performance?businessId=${businessId}`);
+            
+            if (!response.ok) {
+              throw new Error('Failed to fetch performance metrics');
+            }
+
+            const data = await response.json();
+            set({ 
+              performanceMetrics: data.performance, 
+              lastPerformanceFetch: Date.now(),
+              isLoadingPerformance: false 
+            });
+          } catch (error) {
+            set({ 
+              performanceError: error instanceof Error ? error.message : 'Unknown error',
+              isLoadingPerformance: false 
+            });
+          }
+        },
+
         refreshData: async (userId: string) => {
           // Clear cache and force refresh
           set({ 
@@ -300,15 +380,23 @@ export const useBusinessStore = create<BusinessState>()(
           business: null,
           stats: null,
           chartData: null,
+          recentBookings: [],
+          performanceMetrics: null,
           isLoadingBusiness: false,
           isLoadingStats: false,
           isLoadingChartData: false,
+          isLoadingBookings: false,
+          isLoadingPerformance: false,
           businessError: null,
           statsError: null,
           chartDataError: null,
+          bookingsError: null,
+          performanceError: null,
           lastBusinessFetch: null,
           lastStatsFetch: null,
           lastChartDataFetch: null,
+          lastBookingsFetch: null,
+          lastPerformanceFetch: null,
         }),
       }),
       {
